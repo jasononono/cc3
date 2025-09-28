@@ -1,0 +1,12 @@
+.idea/
+.vscode/
+.DS_Store
+**/__pycache__/
+
+notes/
+rough/
+
+zoomlink.pdf
+cpp/main
+cpp/main.cpp
+py/main.py
