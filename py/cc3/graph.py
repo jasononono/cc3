@@ -17,7 +17,7 @@ class ListGraph:
         self.weighted = weighted
         self.directed = directed
 
-        self.list: list[list[Edge]] = [[] for _ in range(v)]
+        self.list = [[] for _ in range(v)]
 
     # ADD VERTICES
     def add_vertices(self, amount = 1):
@@ -25,7 +25,7 @@ class ListGraph:
         self.list.extend([[] for _ in range(amount)])
 
     # IS EDGE
-    def is_edge(self, a, b): # O(degree of a)
+    def is_edge(self, a: int, b: int): # O(degree of a)
         if a >= self.order or b >= self.order:
             return False
 
@@ -35,7 +35,7 @@ class ListGraph:
         return False
 
     # ADD EDGE
-    def add_edge(self, a, b, w = 1):
+    def add_edge(self, a: int, b: int, w = 1):
         if self.is_edge(a, b):
             return False
 
@@ -52,7 +52,7 @@ class ListGraph:
         return True
 
     # REMOVE EDGE
-    def remove_edge(self, a, b):
+    def remove_edge(self, a: int, b: int):
         result = self._remove_edge(a, b)
         if not self.directed:
             self._remove_edge(b, a)
@@ -68,13 +68,13 @@ class ListGraph:
         return False
 
     # OUT DEGREE
-    def out_degree(self, v): # O(1)
+    def out_degree(self, v: int): # O(1)
         if v >= self.order:
             return -1
         return len(self.list[v])
 
     # IN DEGREE
-    def in_degree(self, v): # O(e)
+    def in_degree(self, v: int): # O(e)
         if v >= self.order:
             return -1
 
@@ -86,7 +86,7 @@ class ListGraph:
         return count
 
     # DEGREE
-    def degree(self, v):
+    def degree(self, v: int):
         if v >= self.order:
             return -1
         return (self.in_degree(v) if self.directed else 0) + self.out_degree(v)
@@ -100,7 +100,7 @@ class MatrixGraph:
         self.weighted = weighted
         self.directed = directed
 
-        self.matrix: list[list[int]] = [[0] * v for _ in range(v)]
+        self.matrix = [[0] * v for _ in range(v)]
 
     # ADD VERTICES
     def add_vertices(self, amount = 1):
@@ -111,13 +111,13 @@ class MatrixGraph:
         self.matrix.extend([[0] * self.order for _ in range(amount)])
 
     # IS EDGE
-    def is_edge(self, a, b): # O(1)
+    def is_edge(self, a: int, b: int): # O(1)
         if a >= self.order or b >= self.order:
             return False
         return self.matrix[a][b] != 0
 
     # ADD EDGE
-    def add_edge(self, a, b, w = 1):
+    def add_edge(self, a: int, b: int, w = 1):
         if self.is_edge(a, b):
             return False
 
@@ -134,7 +134,7 @@ class MatrixGraph:
         return True
 
     # REMOVE EDGE
-    def remove_edge(self, a, b):
+    def remove_edge(self, a: int, b: int):
         if self.matrix[a][b] == 0:
             return False
 
@@ -146,7 +146,7 @@ class MatrixGraph:
         return True
 
     # OUT DEGREE
-    def out_degree(self, v):  # O(n)
+    def out_degree(self, v: int):  # O(n)
         if v >= self.order:
             return -1
 
@@ -157,7 +157,7 @@ class MatrixGraph:
         return count
 
     # IN DEGREE
-    def in_degree(self, v):  # O(n)
+    def in_degree(self, v: int):  # O(n)
         if v >= self.order:
             return -1
 
@@ -168,7 +168,7 @@ class MatrixGraph:
         return count
 
     # DEGREE
-    def degree(self, v):
+    def degree(self, v: int):
         if v >= self.order:
             return -1
         return (self.in_degree(v) if self.directed else 0) + self.out_degree(v)

@@ -2,7 +2,7 @@ from .graph import *
 from .traverse import *
 
 
-graph_types = ("list", "matrix")
+graph_variants = ("list", "matrix")
 
 def graph(v = 0, weighted = False, directed = False, variant = "list"):
     if variant == "list":

@@ -16,7 +16,7 @@ def _bfs_list(graph, anchor):
     dist[anchor] = 0
 
     while len(queue) > 0:
-        current = queue.pop()
+        current = queue.popleft()
         for e in graph.list[current]:
             if not visited[e.dest]:
                 queue.append(e.dest)
@@ -35,12 +35,36 @@ def _bfs_matrix(graph, anchor):
     dist[anchor] = 0
 
     while len(queue) > 0:
-        current = queue.pop()
+        current = queue.popleft()
         for e, w in enumerate(graph.matrix[current]):
             if w != 0 and not visited[e]:
                 queue.append(e)
                 visited[e] = True
                 dist[e] = dist[current] + 1
+
+    return dist
+
+# 0-1 BFS
+def zero_one_bfs(graph: ListGraph, anchor = 0):
+    queue = deque()
+    visited = [False] * graph.order
+    dist = [-1] * graph.order
+
+    queue.append(anchor)
+    visited[anchor] = True
+    dist[anchor] = 0
+
+    while len(queue) > 0:
+        current = queue.popleft()
+        for e in graph.list[current]:
+            if not visited[e.dest]:
+                if e.weight:
+                    queue.append(e.dest)
+                    dist[e.dest] = dist[current] + 1
+                else:
+                    queue.appendleft(e.dest)
+                    dist[e.dest] = dist[current]
+                visited[e.dest] = True
 
     return dist
 
