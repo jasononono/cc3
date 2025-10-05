@@ -10,10 +10,12 @@ namespace cc3 {
 
         int dest;
         int weight;
+        bool weighted;
 
-        Edge(int d, int w) {
+        Edge(int d, int w, bool b) {
             dest = d;
             weight = w;
+            weighted = b;
         }
 
         bool operator==(int other) const {
@@ -23,7 +25,13 @@ namespace cc3 {
         bool operator==(const Edge &other) const {
             return dest == other.dest && weight == other.weight;
         }
-        
+
+        std::string to_string() const {
+            if (weighted) {
+                return "[" + std::to_string(dest) + " " + std::to_string(weight) + "]";
+            } return "[" + std::to_string(dest) + "]";
+            
+        }
     };
 
 
@@ -38,13 +46,24 @@ namespace cc3 {
         std::vector<std::vector<Edge>> list;
 
         ListGraph(int v = 0, bool w = false, bool d = false) {
-            order = v;
+            order = 0;
             size = 0;
 
             weighted = w;
             directed = d;
 
             list = std::vector<std::vector<Edge>>();
+            add_vertices(v);
+        }
+
+        std::string to_string() const {
+            std::string result = "";
+            for (int i = 0; i < order; ++i) {
+                result += std::to_string(i) + " | ";
+                for (int j = 0; j < list[i].size(); ++j) {
+                    result += list[i][j].to_string();
+                } result += "\n";
+            } return result;
         }
 
         void add_vertices(int amount = 1) {
@@ -70,8 +89,8 @@ namespace cc3 {
             }
             if (!weighted) {w = 1;}
 
-            list[a].push_back(Edge(b, w));
-            if (!directed) {list[b].push_back(Edge(a, w));}
+            list[a].push_back(Edge(b, w, weighted));
+            if (!directed) {list[b].push_back(Edge(a, w, weighted));}
 
             size++; return true;
         }
@@ -132,13 +151,14 @@ namespace cc3 {
         std::vector<std::vector<int>> matrix;
 
         MatrixGraph(int v = 0, bool w = false, bool d = false) {
-            order = v;
+            order = 0;
             size = 0;
 
             weighted = w;
             directed = d;
 
             matrix = std::vector<std::vector<int>>();
+            add_vertices(v);
         }
 
         void add_vertices(int amount = 1) {

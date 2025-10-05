@@ -1,12 +1,16 @@
 class Edge:
-    def __init__(self, dest, weight):
+    def __init__(self, dest, weight, weighted):
         self.dest = dest
         self.weight = weight
+        self.weighted = weighted
 
     def __eq__(self, other):
         if isinstance(other, int):
             return self.dest == other
         return self.dest == other.dest and self.weight == other.weight
+
+    def __str__(self):
+        return f"[{self.dest} {self.weight}]" if self.weighted else f"[{self.dest}]"
 
 
 class ListGraph:
@@ -18,6 +22,15 @@ class ListGraph:
         self.directed = directed
 
         self.list = [[] for _ in range(v)]
+
+    def __str__(self):
+        result = ""
+        for i, n in enumerate(self.list):
+            result += str(i) + " | "
+            for e in n:
+                result += str(e) + ' '
+            result += '\n'
+        return result
 
     # ADD VERTICES
     def add_vertices(self, amount = 1):
@@ -44,9 +57,9 @@ class ListGraph:
         if not self.weighted:
             w = 1
 
-        self.list[a].append(Edge(b, w))
+        self.list[a].append(Edge(b, w, self.weighted))
         if not self.directed:
-            self.list[b].append(Edge(a, w))
+            self.list[b].append(Edge(a, w, self.weighted))
 
         self.size += 1
         return True

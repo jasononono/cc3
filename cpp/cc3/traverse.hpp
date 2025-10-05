@@ -86,12 +86,6 @@ namespace cc3 {
     }
     
     // DFS
-    std::vector<bool> dfs(const ListGraph &graph, int anchor = 0) {
-        std::vector<bool> visited(graph.order, false);
-        _dfs(graph, anchor, visited);
-        return visited;
-    }
-
     void _dfs(const ListGraph &graph, int current, std::vector<bool> &visited) {
         visited[current] = true;
         for (Edge e : graph.list[current]) {
@@ -101,8 +95,8 @@ namespace cc3 {
         }
     }
 
-    std::vector<bool> dfs(const MatrixGraph &graph, int anchor = 0) {
-       std::vector<bool> visited(graph.order, false);
+    std::vector<bool> dfs(const ListGraph &graph, int anchor = 0) {
+        std::vector<bool> visited(graph.order, false);
         _dfs(graph, anchor, visited);
         return visited;
     }
@@ -114,5 +108,11 @@ namespace cc3 {
                 _dfs(graph, e, visited);
             }
         }
+    }
+
+    std::vector<bool> dfs(const MatrixGraph &graph, int anchor = 0) {
+       std::vector<bool> visited(graph.order, false);
+        _dfs(graph, anchor, visited);
+        return visited;
     }
 }
