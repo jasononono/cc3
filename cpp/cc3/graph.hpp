@@ -229,4 +229,5 @@ namespace cc3 {
             } return out_degree(v);
         }
     };
+    
 }
