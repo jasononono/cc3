@@ -1,14 +1,14 @@
-from .graph import ListGraph, MatrixGraph
+from .graph import Graph, MatrixGraph
 
 
 # CYCLE DETECTION
-def find_cycle(graph: ListGraph|MatrixGraph):
+def find_cycle(graph: Graph | MatrixGraph):
     return (find_cycle_directed if graph.directed else find_cycle_undirected)(graph)
 
 # UNDIRECTED GRAPH
-def find_cycle_undirected(graph: ListGraph|MatrixGraph):
+def find_cycle_undirected(graph: Graph | MatrixGraph):
     visited = [False] * graph.order
-    function = _find_cycle_list_undirected if isinstance(graph, ListGraph) else _find_cycle_matrix_undirected
+    function = _find_cycle_list_undirected if isinstance(graph, Graph) else _find_cycle_matrix_undirected
 
     for i in range(len(visited)):
         if not visited[i] and function(graph, i, -1, visited):
@@ -34,9 +34,9 @@ def _find_cycle_matrix_undirected(graph, current, parent, visited):
     return False
 
 # DIRECTED GRAPH
-def find_cycle_directed(graph: ListGraph|MatrixGraph):
+def find_cycle_directed(graph: Graph | MatrixGraph):
     visited = [0] * graph.order
-    function = _find_cycle_list_directed if isinstance(graph, ListGraph) else _find_cycle_matrix_directed
+    function = _find_cycle_list_directed if isinstance(graph, Graph) else _find_cycle_matrix_directed
 
     for i in range(len(visited)):
         if not visited[i] and function(graph, i, visited):

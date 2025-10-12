@@ -1,87 +1,85 @@
+from typing import Any, Sequence
 from collections import deque
-from .graph import ListGraph, MatrixGraph
+from .graph import Graph, Edge, ListGraph, MatrixGraph
 
 
-# BFS
-def bfs(graph: ListGraph|MatrixGraph, anchor = 0):
-    return _bfs_list(graph, anchor) if isinstance(graph, ListGraph) else _bfs_matrix(graph, anchor)
+class Bfs:
+    """customizable bfs template.
+    To override handles, create a child class of this instance."""
 
-def _bfs_list(graph, anchor):
-    queue = deque()
-    visited = [False] * graph.order
-    dist = [-1] * graph.order
+    def __init__(self) -> None:
+        self.graph = None
+        self.anchor = None
 
-    queue.append(anchor)
-    visited[anchor] = True
-    dist[anchor] = 0
+        self.queue = None
+        self.visited = None
+        self.current = None
 
-    while len(queue) > 0:
-        current = queue.popleft()
-        for e in graph.list[current]:
-            if not visited[e.dest]:
-                queue.append(e.dest)
-                visited[e.dest] = True
-                dist[e.dest] = dist[current] + 1
+    # HANDLES
+    def on_start(self, graph: Graph) -> None:
+        """handle called before bfs starts"""
+        return
 
-    return dist
+    def is_run(self, graph: Graph) -> bool:
+        """if returns false, bfs halts. Checked before every pop from queue"""
+        return len(self.queue) > 0
 
-def _bfs_matrix(graph, anchor):
-    queue = deque()
-    visited = [False] * graph.order
-    dist = [-1] * graph.order
+    def on_visit(self, graph: Graph):
+        """called after current is popped from queue"""
+        return
 
-    queue.append(anchor)
-    visited[anchor] = True
-    dist[anchor] = 0
+    def get_next(self, graph: Graph) -> Sequence[Edge]:
+        """returns all edges that need to be checked"""
+        return graph.get_outgoing(self.current)
 
-    while len(queue) > 0:
-        current = queue.popleft()
-        for e, w in enumerate(graph.matrix[current]):
-            if w != 0 and not visited[e]:
-                queue.append(e)
-                visited[e] = True
-                dist[e] = dist[current] + 1
+    def is_visit(self, graph: Graph, e: Edge) -> bool:
+        """if returns true, the destination will be pushed to the queue"""
+        return not self.visited[e.dest]
 
-    return dist
+    def will_visit(self, graph: Graph, e: Edge) -> None:
+        """called when an edge is pushed to queue"""
+        return
 
-# 0-1 BFS
-def zero_one_bfs(graph: ListGraph, anchor = 0):
-    queue = deque()
-    visited = [False] * graph.order
-    dist = [-1] * graph.order
+    def on_end(self, graph: Graph) -> Any:
+        """the return value will be the result of execution"""
+        return
 
-    queue.append(anchor)
-    visited[anchor] = True
-    dist[anchor] = 0
+    # END OF HANDLES
 
-    while len(queue) > 0:
-        current = queue.popleft()
-        for e in graph.list[current]:
-            if not visited[e.dest]:
-                if e.weight:
-                    queue.append(e.dest)
-                    dist[e.dest] = dist[current] + 1
-                else:
-                    queue.appendleft(e.dest)
-                    dist[e.dest] = dist[current]
-                visited[e.dest] = True
+    def run(self, graph: Graph, anchor = 0) -> Any:
+        """run bfs traversal on graph, with specified anchor point (depth 0)"""
 
-    return dist
+        self.graph = graph
+        self.anchor = anchor
 
-# DFS
-def dfs(graph: ListGraph|MatrixGraph, anchor = 0):
-    visited = [False] * graph.order
-    _dfs_list(graph, anchor, visited) if isinstance(graph, ListGraph) else _dfs_matrix(graph, anchor, visited)
-    return visited
+        if isinstance(graph, ListGraph):
+            return self._list(graph, anchor)
+        if isinstance(graph, MatrixGraph):
+            return self._matrix(graph, anchor)
+        raise TypeError(f"'{type(graph).__name__}' is not supported")
 
-def _dfs_list(graph, current, visited):
-    visited[current] = True
-    for e in graph.list[current]:
-        if not visited[e.dest]:
-            _dfs_list(graph, e.dest, visited)
+    def _list(self, graph: ListGraph, anchor = 0):
+        """run bfs traversal on ListGraph"""
 
-def _dfs_matrix(graph, current, visited):
-    visited[current] = True
-    for e, w in enumerate(graph.matrix[current]):
-        if w != 0 and not visited[e]:
-            _dfs_matrix(graph, e, visited)
+        self.queue = deque()
+        self.visited = [False] * graph.order
+
+        self.queue.append(anchor)
+        self.visited[anchor] = True
+
+        self.on_start(graph)
+
+        while self.is_run(graph):
+            self.current = self.queue.popleft()
+            self.on_visit(graph)
+
+            for e in self.get_next(graph):
+                if self.is_visit(graph, e):
+                    self.queue.append(e.dest)
+                    self.visited[e.dest] = True
+                    self.will_visit(graph, e)
+
+        return self.on_end(graph)
+
+    def _matrix(self, graph: MatrixGraph, anchor = 0):
+        raise NotImplementedError()
