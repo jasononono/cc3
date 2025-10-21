@@ -387,3 +387,151 @@ class MatrixGraph(Graph):
 
     def set_weight(self, a: int, b: int, w: Any = 1) -> None:
         self.adj[a][b] = w
+        
+
+# class SuccessorGraph(Graph):
+#     """a graph object variant that has at most one outgoing edge per vertex"""
+
+#     def __init__(self, v = 0, weighted = False, default_value = None) -> None:
+#         super().__init__()
+#         if v < 0:
+#             raise ValueError("amount of vertices must not be negative")
+
+#         self.order = v
+#         self.size = 0
+
+#         self.weighted = weighted
+#         self.directed = True
+#         self.default_value = default_value
+
+#         self.adj = [default_value] * v
+
+#     def __str__(self) -> str:
+#         result = ""
+#         for i, n in enumerate(self.adj):
+#             result += str(i) + " | "
+#             for e in n:
+#                 result += str(e) + ' '
+#             result += '\n'
+#         return result.strip()
+
+#     # VERTEX ACCESS
+#     def get_outgoing(self, v: int) -> Sequence[Edge]:
+#         if not 0 <= v < self.order:
+#             raise IndexError("vertex does not exist in graph")
+
+#         return self.adj[v]
+
+#     def get_incoming(self, v: int) -> Sequence[Edge]:
+#         if not 0 <= v < self.order:
+#             raise IndexError("vertex does not exist in graph")
+
+#         result = []
+#         for n in self.adj:
+#             for e in n:
+#                 if e.dest == v:
+#                     result.append(e)
+#         return result
+
+#     def out_degree(self, v: int) -> int:
+#         if not 0 <= v < self.order:
+#             raise IndexError("vertex does not exist in graph")
+
+#         return len(self.adj[v])
+
+#     def in_degree(self, v: int) -> int:
+#         if not 0 <= v < self.order:
+#             raise IndexError("vertex does not exist in graph")
+
+#         count = 0
+#         for n in self.adj:
+#             for e in n:
+#                 if e.dest == v:
+#                     count += 1
+#         return count
+
+#     def degree(self, v: int) -> int:
+#         return int(self.directed) * self.in_degree(v) + self.out_degree(v)
+
+#     # VERTEX CONTROL
+#     def add_vertex(self, amount = 1) -> None:
+#         if amount < 0:
+#             raise ValueError("amount must not be negative")
+
+#         self.order += amount
+#         self.adj.extend([[] for _ in range(amount)])
+
+#     # TODO remove_vertex
+
+#     # EDGE ACCESS
+#     def is_edge(self, a: int, b: int) -> bool:
+#         if not (0 <= a < self.order and 0 <= b < self.order):
+#             return False
+
+#         for e in self.adj[a]:
+#             if e.dest == b:
+#                 return True
+#         return False
+
+#     def get_edge(self, a: int, b: int) -> Edge:
+#         if not 0 <= a < self.order:
+#             raise IndexError(f"vertex [{a}] does not exist in graph")
+#         if not 0 <= b < self.order:
+#             raise IndexError(f"vertex [{b}] does not exist in graph")
+
+#         for e in self.adj[a]:
+#             if e.dest == b:
+#                 return e
+#         raise IndexError(f"edge [{a}->{b}] not in graph")
+
+#     def get_weight(self, a: int, b: int) -> Any:
+#         return self.get_edge(a, b).weight
+
+#     # EDGE CONTROL
+#     def add_edge(self, a: int, b: int, w: Any = 1, auto_expand = True) -> None:
+#         if self.is_edge(a, b):
+#             self.set_weight(a, b, w)
+#             if not self.directed:
+#                 self.set_weight(b, a, w)
+#             return
+#         if a < 0 or b < 0:
+#             raise IndexError(f"vertices must not be negative")
+
+#         if auto_expand:
+#             if a >= self.order or b >= self.order:
+#                 self.add_vertex(max(a, b) - self.order + 1)
+#         else:
+#             if not 0 <= a < self.order:
+#                 raise IndexError(f"vertex [{a}] does not exist in graph")
+#             if not 0 <= b < self.order:
+#                 raise IndexError(f"vertex [{b}] does not exist in graph")
+
+#         self.adj[a].append(Edge(a, b, w, self))
+#         if not self.directed:
+#             self.adj[b].append(Edge(b, a, w, self))
+#         self.size += 1
+
+#     def remove_edge(self, a: int, b: int) -> None:
+#         if not 0 <= a < self.order:
+#             raise IndexError(f"vertex [{a}] does not exist in graph")
+#         if not 0 <= b < self.order:
+#             raise IndexError(f"vertex [{b}] does not exist in graph")
+        
+#         self._remove_edge(a, b)
+#         if not self.directed:
+#             self._remove_edge(b, a)
+#         self.size -= 1
+
+#     def _remove_edge(self, a: int, b: int) -> None:
+#         """helper function for remove_edge"""
+
+#         for i, e in enumerate(self.adj[a]):
+#             if e.dest == b:
+#                 del self.adj[a][i]
+#                 return
+#         raise IndexError(f"edge [{a}->{b}] not in graph")
+
+#     # TODO move_edge
+    
+#     def set_weight(self, a: int, b: int, w: Any = 1) -> None:
+#         self.get_edge(a, b).weight = w
