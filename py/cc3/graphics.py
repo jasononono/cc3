@@ -60,6 +60,7 @@ def display(graph: ListGraph) -> None:
         dsq = np.sum(displacement ** 2, axis = 2, dtype = np.float64)
         np.fill_diagonal(dsq, np.inf)
         distance = np.maximum(np.sqrt(dsq), escape_force)
+        dsq = np.maximum(dsq, escape_force)
         
         magnitude = repulsion / dsq
         unit_force = displacement / distance[:, :, np.newaxis]
