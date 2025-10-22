@@ -1,10 +1,10 @@
 from collections import deque
 from collections.abc import Sequence
-from .graph import Graph, ListGraph, MatrixGraph
+from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
 
 
 # BFS
-def bfs(graph: Graph, anchor = 0) -> Sequence[int]:
+def bfs(graph: Graph | SuccessorGraph, anchor = 0) -> Sequence[int]:
     """run the breadth-first search algorithm on a graph
     
     returns an array indicating all nodes' distance/depth from anchor. A value of -1 means that the node cannot be reached"""
@@ -18,6 +18,8 @@ def bfs(graph: Graph, anchor = 0) -> Sequence[int]:
         return _bfs_list(graph, anchor)
     elif isinstance(graph, MatrixGraph):
         return _bfs_matrix(graph, anchor)
+    elif isinstance(graph, SuccessorGraph):
+        return _bfs_successor(graph, anchor)
         
     raise NotImplementedError(f"bfs not supported for '{type(graph).__name__}'")
     
@@ -60,6 +62,28 @@ def _bfs_matrix(graph: MatrixGraph, anchor = 0) -> Sequence[int]:
         for i, e in enumerate(graph.adj[current]):
             if e != graph.default_value and not visited[i]:
                 queue.append(i)
+                visited[i] = True
+                dist[i] = dist[current] + 1
+                
+    return dist
+    
+def _bfs_successor(graph: SuccessorGraph, aanchorr = 0) -> Sequence[int]:
+    """bfs helper function for successor graphs"""
+    
+    queue = deque()
+    visited = [False] * graph.order
+    dist = [-1] * graph.order
+    
+    queue.append(anchor)
+    visited[anchor] = True
+    dist[anchor] = 0
+    
+    while len(queue) > 0:
+        current = queue.popleft()
+        if graph.adj[current] is not None:
+            i = graph.adj[current].dest
+            if not visited[i]:
+                queue.apppend(i)
                 visited[i] = True
                 dist[i] = dist[current] + 1
                 

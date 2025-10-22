@@ -2,14 +2,16 @@ import tkinter as tk
 import numpy as np
 import math, random, time
 
-from .graph import ListGraph
+from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
 
 
 # CONSTANTS
-screen_width = 400 # must be greater than 20
-screen_height = 300 # must be greater than 20
+screen_width = 400
+screen_height = 300
 target_fps = 60
+
 node_radius = 10
+edge_thickness = 2
 
 escape_force = 0.01
 repulsion = 2000
@@ -19,7 +21,35 @@ damping = 0.6
 center_gravity = 0.01
 
 
-def display(graph: ListGraph) -> None:
+def get_edges(graph: Graph | SuccessorGraph) -> np.ndarray:
+    """helper function that turns the edge data of a graph into a numpy array"""
+    
+    edges = []
+    
+    if isinstance(graph, ListGraph):
+        for n in graph.adj:
+            for e in n:
+                if not graph.directed and (e.dest, e.origin) in edges:
+                    continue
+                edges.append((e.origin, e.dest))
+                
+    elif isinstance(graph, MatrixGraph):
+        for i, n in enumerate(graph.adj):
+            for j, e in enumerate(n):
+                if e != graph.default_value:
+                    if not graph.directed and (j, i) in edges:
+                        continue
+                    edges.append((i, j))
+                    
+    elif isinstance(graph, SuccessorGraph):
+        for e in graph.adj:
+            if e is not None:
+                edges.append((e.origin, e.dest))
+    
+    return np.array(edges, dtype = np.int64)
+
+
+def display(graph: Graph | SuccessorGraph) -> None:
     """create a interactive visualization of the provided graph in tkinter"""
     
     # tkinter initialization
@@ -28,11 +58,7 @@ def display(graph: ListGraph) -> None:
     canvas.pack()
     
     # initialize data
-    edges = []
-    for n in graph.adj:
-        for e in n:
-            edges.append((e.origin, e.dest))
-    edges = np.array(edges, dtype = np.int64)
+    edges = get_edges(graph)
     
     position = np.array([[random.randint(10, screen_width - 10), random.randint(10, screen_height - 10)] for _ in range(graph.order)])
     velocity = np.zeros((graph.order, 2))
@@ -42,15 +68,14 @@ def display(graph: ListGraph) -> None:
     # create canvas objects
     vertices = []
     labels = []
-    lines = [[] for _ in range(graph.order)]
+    lines = []
     
     for i in range(graph.size):
         lines.append(canvas.create_line(0, 0, 0, 0, fill = "gray", width = 2))
     
     for i in range(graph.order):
-        vertices.append(canvas.create_oval(0, 0, 0, 0, fill = "black"))
+        vertices.append(canvas.create_oval(0, 0, 0, 0, fill = "black", outline = "", width = edge_thickness))
         labels.append(canvas.create_text(0, 0, text = str(i), font = ("Arial", node_radius * 4 // 5, "bold"), fill = "white"))
-    
     
     # UPDATE
     def vertex_repulsion(movement: np.ndarray) -> None:
@@ -132,7 +157,6 @@ def display(graph: ListGraph) -> None:
             
         root.after(1000 // target_fps, update)
         
-     
     # MOUSE ACTIONS   
     def select_vertex(event) -> None:
         """select a vertex upon mouse down"""
@@ -149,15 +173,17 @@ def display(graph: ListGraph) -> None:
                 minimum_index = i
                 
         selected_vertex = minimum_index
-        
+        if selected_vertex is not None:
+            canvas.itemconfig(vertices[selected_vertex], outline = "yellow")
         
     def deselect_vertex(event) -> None:
         """deselect a vertex upon mouse up"""
         
         nonlocal selected_vertex
         
+        if selected_vertex is not None:
+            canvas.itemconfig(vertices[selected_vertex], outline = "")
         selected_vertex = None
-        
         
     def drag_vertex(event) -> None:
         """set the position of a vertex on drag"""
@@ -165,11 +191,19 @@ def display(graph: ListGraph) -> None:
         if selected_vertex is not None:
             position[selected_vertex][0] = event.x
             position[selected_vertex][1] = event.y
+            
+    def shuffle(event) -> None:
+        """shuffle all vertices"""
+        
+        nonlocal velocity
+        
+        velocity = np.array([[random.uniform(-100, 100), random.uniform(-100, 100)] for _ in range(graph.order)])
     
     
     canvas.bind("<ButtonPress-1>", select_vertex)
     canvas.bind("<ButtonRelease-1>", deselect_vertex)
     canvas.bind("<B1-Motion>", drag_vertex)
+    canvas.bind("<ButtonPress-3>", shuffle)
     
     # MAINLOOP
     update()
