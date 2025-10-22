@@ -1,35 +1,138 @@
 import tkinter as tk
+import numpy as np
 import math, random, time
 
 from .graph import ListGraph
 
 
 # CONSTANTS
-screen_width = 400 # greater than 20
-screen_height = 300 # greater than 20
+screen_width = 400 # must be greater than 20
+screen_height = 300 # must be greater than 20
+target_fps = 60
 node_radius = 10
 
 escape_force = 0.01
-repulsion = 3000
+repulsion = 2000
 spring_length = 100
 spring_stiffness = 0.03
-damping = 0.8
-center_gravity = 0.02
+damping = 0.6
+center_gravity = 0.01
 
 
 def display(graph: ListGraph) -> None:
     """create a interactive visualization of the provided graph in tkinter"""
     
+    # tkinter initialization
     root = tk.Tk()
     canvas = tk.Canvas(root, width = screen_width, height = screen_height, bg = "white")
     canvas.pack()
     
-    position = [[random.randint(10, screen_width - 10), random.randint(10, screen_height - 10)] for _ in range(graph.order)]
-    velocity = [[0, 0] for _ in range(graph.order)]
+    # initialize data
+    edges = []
+    for n in graph.adj:
+        for e in n:
+            edges.append((e.origin, e.dest))
+    edges = np.array(edges, dtype = np.int64)
+    
+    position = np.array([[random.randint(10, screen_width - 10), random.randint(10, screen_height - 10)] for _ in range(graph.order)])
+    velocity = np.zeros((graph.order, 2))
     
     selected_vertex = None
     
+    # create canvas objects
+    vertices = []
+    labels = []
+    lines = [[] for _ in range(graph.order)]
     
+    for i in range(graph.size):
+        lines.append(canvas.create_line(0, 0, 0, 0, fill = "gray", width = 2))
+    
+    for i in range(graph.order):
+        vertices.append(canvas.create_oval(0, 0, 0, 0, fill = "black"))
+        labels.append(canvas.create_text(0, 0, text = str(i), font = ("Arial", node_radius * 4 // 5, "bold"), fill = "white"))
+    
+    
+    # UPDATE
+    def vertex_repulsion(movement: np.ndarray) -> None:
+        """force each vertex apart"""
+        
+        displacement = position[:, np.newaxis, :] - position[np.newaxis, :, :]
+        dsq = np.sum(displacement ** 2, axis = 2, dtype = np.float64)
+        np.fill_diagonal(dsq, np.inf)
+        distance = np.maximum(np.sqrt(dsq), escape_force)
+        
+        magnitude = repulsion / dsq
+        unit_force = displacement / distance[:, :, np.newaxis]
+        force = magnitude[:, :, np.newaxis] * unit_force
+        net_force = np.sum(force, axis = 1)
+        
+        movement += net_force
+        
+        
+    def edge_tension(movement: np.ndarray) -> None:
+        """edges act as springs, holding the vertices in place"""
+        
+        displacement = position[edges[:, 1]] - position[edges[:, 0]]
+            
+        distance = np.linalg.norm(displacement, axis = 1)
+        distance = np.maximum(distance, escape_force)
+        
+        magnitude = spring_stiffness * (distance - spring_length)
+        
+        unit_force = displacement / distance[:, np.newaxis]
+        force = magnitude[:, np.newaxis] * unit_force
+        np.add.at(movement, edges[:, 0], force)
+        np.add.at(movement, edges[:, 1], -force)
+                
+                
+    def central_gravity(movement: np.ndarray) -> None:
+        """gravity that holds vertices to the center of the frame"""
+        
+        center = np.array([screen_width / 2, screen_height / 2])
+        displacement = center - position
+        movement += displacement * center_gravity
+        
+        
+    def update() -> None:
+        """apply physics calculations each frame
+        
+        received partial physics help from ChatGPT"""
+        
+        nonlocal position, velocity
+        
+        movement = np.zeros((graph.order, 2))
+        vertex_repulsion(movement)
+        edge_tension(movement)
+        central_gravity(movement)
+        
+        # update position and velocity
+        if selected_vertex is not None:
+            excluded_vel = velocity[selected_vertex]
+            excluded_pos = position[selected_vertex]
+        
+        velocity = (velocity + movement) * damping
+        position = position.astype(np.float64)
+        position += velocity
+        
+        if selected_vertex is not None:
+            velocity[selected_vertex] = excluded_vel
+            position[selected_vertex] = excluded_pos
+            
+        position[:, 0] = np.clip(position[:, 0], node_radius, screen_width - node_radius)
+        position[:, 1] = np.clip(position[:, 1], node_radius, screen_height - node_radius)
+                
+        # update graph
+        for i, (a, b) in enumerate(edges):
+            canvas.coords(lines[i], *position[a], *position[b])
+            
+        for i, (x, y) in enumerate(position):
+            canvas.coords(vertices[i], x - node_radius, y - node_radius, x + node_radius, y + node_radius)
+            canvas.coords(labels[i], x, y)
+            
+        root.after(1000 // target_fps, update)
+        
+     
+    # MOUSE ACTIONS   
     def select_vertex(event) -> None:
         """select a vertex upon mouse down"""
         
@@ -63,77 +166,10 @@ def display(graph: ListGraph) -> None:
             position[selected_vertex][1] = event.y
     
     
-    def update() -> None:
-        """apply physics calculations each frame
-        
-        received partial physics help from ChatGPT"""
-        
-        movement = [[0, 0] for _ in range(graph.order)]
-       
-        for i in range(graph.order - 1):
-            for j in range(i + 1, graph.order):
-                dx = position[i][0] - position[j][0]
-                dy = position[i][1] - position[j][1]
-                dsq = dx ** 2 + dy ** 2
-                dist = math.sqrt(dsq) or escape_force
-                
-                force = repulsion / (dsq or escape_force)
-                fx = force * dx / dist
-                fy = force * dy / dist
-                
-                movement[i][0] += fx
-                movement[i][1] += fy
-                movement[j][0] -= fx
-                movement[j][1] -= fy
-                
-        for n in graph.adj:
-            for e in n:
-                dx = position[e.dest][0] - position[e.origin][0]
-                dy = position[e.dest][1] - position[e.origin][1]
-                dist = math.sqrt(dx ** 2 + dy ** 2) or escape_force
-                
-                displacement = dist - spring_length
-                force = spring_stiffness * displacement
-                fx = force * dx / dist
-                fy = force * dy / dist
-                
-                movement[e.origin][0] += fx
-                movement[e.origin][1] += fy
-                movement[e.dest][0] -= fx
-                movement[e.dest][1] -= fy
-                
-        for i in range(graph.order):
-            dx = screen_width / 2 - position[i][0]
-            dy = screen_height / 2 - position[i][1]
-            movement[i][0] += dx * center_gravity
-            movement[i][1] += dy * center_gravity
-                
-        for i in range(graph.order):
-            if i != selected_vertex:
-                
-                velocity[i][0] = (velocity[i][0] + movement[i][0]) * damping
-                velocity[i][1] = (velocity[i][1] + movement[i][1]) * damping
-    
-                position[i][0] += velocity[i][0]
-                position[i][1] += velocity[i][1]
-
-            position[i][0] = min(max(node_radius, position[i][0]), screen_width - node_radius)
-            position[i][1] = min(max(node_radius, position[i][1]), screen_height - node_radius)
-            
-        canvas.delete("all")
-        for n in graph.adj:
-            for e in n:
-                canvas.create_line(*position[e.origin], *position[e.dest], fill = "gray", width = 2)
-        for i, (x, y) in enumerate(position):
-            canvas.create_oval(x - node_radius, y - node_radius, x + node_radius, y + node_radius, fill = "black")
-            canvas.create_text(x, y, text = str(i), font = ("Arial", 8, "bold"), fill = "white")
-            
-        root.after(33, update)
-    
-    
     canvas.bind("<ButtonPress-1>", select_vertex)
     canvas.bind("<ButtonRelease-1>", deselect_vertex)
     canvas.bind("<B1-Motion>", drag_vertex)
     
+    # MAINLOOP
     update()
     tk.mainloop()
