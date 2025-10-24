@@ -1,4 +1,7 @@
 # Graph object for general use
+basically a NetworkX clone
+
+
 
 Python: drag py/cc3 into working directory
 
@@ -7,12 +10,3 @@ Python: drag py/cc3 into working directory
     # OR
 
     from cc3 import graph
-
-C++: drag cpp/cc3 into working directory
-(deprecated, changes not implemented yet)
-
-    #include "cc3/all.hpp"
-
-    // OR
-
-    #include "cc3/graph.hpp"
