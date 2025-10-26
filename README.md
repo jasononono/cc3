@@ -1,7 +1,7 @@
 # Graph object for general use
 basically a NetworkX clone
 
-![(graphics module demo)](https://github.com/jasononono/cc3/blob/main/visual.gif)
+<img src="https://github.com/jasononono/cc3/blob/main/visual.gif" width="500" height="500" />
 
 Python: drag py/cc3 into working directory
 
