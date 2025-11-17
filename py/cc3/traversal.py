@@ -16,9 +16,9 @@ def bfs(graph: Graph | SuccessorGraph, anchor = 0) -> Sequence[int]:
 
     if isinstance(graph, ListGraph):
         return _bfs_list(graph, anchor)
-    elif isinstance(graph, MatrixGraph):
+    if isinstance(graph, MatrixGraph):
         return _bfs_matrix(graph, anchor)
-    elif isinstance(graph, SuccessorGraph):
+    if isinstance(graph, SuccessorGraph):
         return _bfs_successor(graph, anchor)
 
     raise NotImplementedError(f"bfs not supported for '{type(graph).__name__}'")
