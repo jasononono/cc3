@@ -277,8 +277,8 @@ class MatrixGraph(Graph):
     """a graph object variant that stores edges with an adjacency matrix
 
     the default_value parameter is used to represent the lack of an edge between two vertices
-    (e.g. there are no edges between (a) and (b) if get_weight(a, b) == default_value)
 
+    e.g. if 'get_weight(a, b) == default_value', there are no edges between (a) and (b).
     NOTE: default_value must be immutable"""
 
     def __init__(self, v = 0, weighted = False, directed = False, default_value: Any = None) -> None:

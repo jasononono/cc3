@@ -11,7 +11,6 @@ def has_cycle(graph: Graph | SuccessorGraph) -> bool:
         return has_cycle_directed(graph)
     return has_cycle_undirected(graph)
 
-
 # UNDIRECTED
 def has_cycle_undirected(graph: Graph) -> bool:
     """returns a boolean indicating whether there is a cycle in an undirected graph"""
@@ -24,7 +23,6 @@ def has_cycle_undirected(graph: Graph) -> bool:
             return True
     return False
 
-
 def _has_cycle_undirected_list(graph: ListGraph, current: int, parent: int, visited: list[bool]) -> bool:
     """helper function of has_cycle_undirected for ListGraphs"""
 
@@ -36,7 +34,6 @@ def _has_cycle_undirected_list(graph: ListGraph, current: int, parent: int, visi
             return True
     return False
 
-
 def _has_cycle_undirected_matrix(graph: MatrixGraph, current: int, parent: int, visited: list[bool]) -> bool:
     """helper function of has_cycle_undirected for MatrixGraphs"""
 
@@ -47,7 +44,6 @@ def _has_cycle_undirected_matrix(graph: MatrixGraph, current: int, parent: int, 
         if visited[e] or _has_cycle_undirected_matrix(graph, e, current, visited):
             return True
     return False
-
 
 # DIRECTED GRAPH
 def has_cycle_directed(graph: Graph):
@@ -61,7 +57,6 @@ def has_cycle_directed(graph: Graph):
             return True
     return False
 
-
 def _has_cycle_directed_list(graph: ListGraph, current: int, visited: list[int]) -> bool:
     """helper function of has_cycle_directed for ListGraphs"""
 
@@ -72,7 +67,6 @@ def _has_cycle_directed_list(graph: ListGraph, current: int, visited: list[int])
 
     visited[current] = 2
     return False
-
 
 def _has_cycle_directed_matrix(graph: MatrixGraph, current: int, visited: list[int]) -> bool:
     """helper function of has_cycle_directed for MatrixGraphs"""
@@ -87,7 +81,6 @@ def _has_cycle_directed_matrix(graph: MatrixGraph, current: int, visited: list[i
     visited[current] = 2
     return False
 
-
 # SUCCESSOR GRAPH
 def has_cycle_successor(graph: SuccessorGraph) -> bool:
     """returns a boolean indicating whether there is a cycle in a successor graph"""
@@ -98,7 +91,6 @@ def has_cycle_successor(graph: SuccessorGraph) -> bool:
         if not visited[n] and _has_cycle_successor_dfs(graph, n, visited):
             return True
     return False
-
 
 def _has_cycle_successor_dfs(graph: SuccessorGraph, current: int, visited: list[int]) -> bool:
     """helper function of has_cycle_successor"""

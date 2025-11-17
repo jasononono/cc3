@@ -23,7 +23,6 @@ def bfs(graph: Graph | SuccessorGraph, anchor = 0) -> Sequence[int]:
 
     raise NotImplementedError(f"bfs not supported for '{type(graph).__name__}'")
 
-
 def _bfs_list(graph: ListGraph, anchor = 0) -> Sequence[int]:
     """bfs helper function for list graphs"""
 
@@ -45,7 +44,6 @@ def _bfs_list(graph: ListGraph, anchor = 0) -> Sequence[int]:
                 dist[e.dest] = dist[current] + 1
 
     return dist
-
 
 def _bfs_matrix(graph: MatrixGraph, anchor = 0) -> Sequence[int]:
     """bfs helper function for matrix graphs"""
@@ -69,7 +67,6 @@ def _bfs_matrix(graph: MatrixGraph, anchor = 0) -> Sequence[int]:
 
     return dist
 
-
 def _bfs_successor(graph: SuccessorGraph, anchor = 0) -> Sequence[int]:
     """bfs helper function for successor graphs"""
 
@@ -91,7 +88,6 @@ def _bfs_successor(graph: SuccessorGraph, anchor = 0) -> Sequence[int]:
                 dist[i] = dist[current] + 1
 
     return dist
-
 
 # DFS
 def dfs(graph: Graph | SuccessorGraph, anchor = 0) -> Sequence[bool]:
@@ -118,7 +114,6 @@ def dfs(graph: Graph | SuccessorGraph, anchor = 0) -> Sequence[bool]:
 
     raise NotImplementedError(f"dfs not supported for '{type(graph).__name__}'")
 
-
 def _dfs_list(graph: ListGraph, current: int, visited: list[bool]) -> None:
     """dfs helper function for list graphs"""
 
@@ -128,7 +123,6 @@ def _dfs_list(graph: ListGraph, current: int, visited: list[bool]) -> None:
         if not visited[e.dest]:
             _dfs_list(graph, e.dest, visited)
 
-
 def _dfs_matrix(graph: MatrixGraph, current: int, visited: list[bool]) -> None:
     """dfs helper function for list graphs"""
 
@@ -137,7 +131,6 @@ def _dfs_matrix(graph: MatrixGraph, current: int, visited: list[bool]) -> None:
     for i, e in enumerate(graph.adj[current]):
         if e != graph.default_value and not visited[i]:
             _dfs_matrix(graph, i, visited)
-
 
 def _dfs_successor(graph: SuccessorGraph, current: int, visited: list[bool]) -> None:
     """dfs helper function for successor graphs"""

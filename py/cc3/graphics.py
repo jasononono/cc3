@@ -4,6 +4,7 @@ import math, random
 
 from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
 
+
 # CONSTANTS
 screen_width = 400
 screen_height = 300
@@ -54,7 +55,6 @@ def get_edges(graph: Graph | SuccessorGraph) -> np.ndarray:
                 edges.append((e.origin, e.dest))
 
     return np.array(edges, dtype = np.int64)
-
 
 def display(graph: Graph | SuccessorGraph) -> None:
     """create an interactive visualization of the provided graph in tkinter"""
