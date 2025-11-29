@@ -11,9 +11,9 @@ def topo_sort(graph: Graph, safe = False) -> Sequence[int]:
     if isinstance(graph, ListGraph):
         result = _topo_sort_list(graph)
     elif isinstance(graph, MatrixGraph):
-        result = _topo_sort_list(graph)
+        result = _topo_sort_matrix(graph)
     elif isinstance(graph, SuccessorGraph):
-        result = _topo_sort_list(graph)
+        result = _topo_sort_successor(graph)
     else:
         raise NotImplementedError(f"topological sorting not supported for '{type(graph).__name__}'")
 
@@ -22,6 +22,8 @@ def topo_sort(graph: Graph, safe = False) -> Sequence[int]:
     return result
 
 def _topo_sort_list(graph: ListGraph) -> Sequence[int]:
+    """helper function of topo_sort for ListGraphs"""
+
     if not graph.directed:
         raise TypeError("topological sorting not supported on undirected graphs")
 
@@ -48,6 +50,8 @@ def _topo_sort_list(graph: ListGraph) -> Sequence[int]:
     return result
 
 def _topo_sort_matrix(graph: MatrixGraph) -> Sequence[int]:
+    """helper function of topo_sort for ListGraphs"""
+
     if not graph.directed:
         raise TypeError("topological sorting not supported on undirected graphs")
 
@@ -75,3 +79,28 @@ def _topo_sort_matrix(graph: MatrixGraph) -> Sequence[int]:
 
     return result
 
+def _topo_sort_successor(graph: SuccessorGraph) -> Sequence[int]:
+    """helper function of topo_sort for SuccessorGraphs"""
+
+    in_degree = [0] * graph.order
+    for n in graph.adj:
+        if n is not None:
+            in_degree[n.dest] += 1
+
+    queue = deque()
+    result = []
+    for n in range(graph.order):
+        if in_degree[n] == 0:
+            queue.append(n)
+
+    while len(queue) > 0:
+        current = queue.popleft()
+        result.append(current)
+
+        e = graph.adj[current]
+        if e is not None:
+            in_degree[e.dest] -= 1
+            if in_degree[e.dest] == 0:
+                queue.append(e.dest)
+
+    return result
