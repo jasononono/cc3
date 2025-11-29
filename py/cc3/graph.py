@@ -14,9 +14,14 @@ class Graph:
         self.weighted = False
         self.directed = False
         self.adj = []
+        self.labels = []
 
     def get_data(self) -> Sequence[Sequence[Edge | int]]:
         """returns the graph's raw adjacency data"""
+        raise NotImplementedError()
+
+    def get_labels(self) -> Sequence[str]:
+        """returns the labels of all vertices"""
         raise NotImplementedError()
 
     # VERTEX ACCESS
@@ -40,6 +45,10 @@ class Graph:
         """returns the degree of a vertex"""
         raise NotImplementedError()
 
+    def get_label(self, v: int) -> str:
+        """returns the label of a vertex"""
+        raise NotImplementedError()
+
     # VERTEX CONTROL
     def add_vertex(self, amount = 1) -> None:
         """push vertices to the end of the graph (newest indices)"""
@@ -53,6 +62,18 @@ class Graph:
 
     def reset(self) -> None:
         """remove all edges and vertices in the graph"""
+        raise NotImplementedError()
+
+    def add_vertex_by_label(self, label: str) -> None:
+        """push a vertex with a designated label to the end of the graph (newest index)"""
+        raise NotImplementedError()
+
+    def add_vertices_by_label(self, labels: Sequence[str]) -> None:
+        """push vertices with designated labels to the end of the graph (newest indices)"""
+        raise NotImplementedError()
+
+    def set_label(self, v: int, label: str) -> None:
+        """set the label of a vertex"""
         raise NotImplementedError()
 
     # EDGE ACCESS
@@ -94,6 +115,14 @@ class Graph:
         raise NotImplementedError()
 
     def copy(self) -> Graph:
+        """make an identical copy of the current graph"""
+        raise NotImplementedError()
+
+    def __copy__(self) -> Graph:
+        """make an identical copy of the current graph"""
+        raise NotImplementedError()
+
+    def __deepcopy__(self, memo) -> Graph:
         """make an identical copy of the current graph"""
         raise NotImplementedError()
 
@@ -144,11 +173,12 @@ class ListGraph(Graph):
         self.directed = directed
 
         self.adj = [[] for _ in range(v)]
+        self.labels = [""] * v
 
     def __str__(self) -> str:
         result = ""
-        for i, n in enumerate(self.adj):
-            result += str(i) + " | "
+        for i, (n, l) in enumerate(zip(self.adj, self.labels)):
+            result += str(i) + ("" if l == "" else f" ({l})") + " | "
             for e in n:
                 result += str(e) + ' '
             result += '\n'
@@ -156,6 +186,9 @@ class ListGraph(Graph):
 
     def get_data(self) -> Sequence[Sequence[Edge]]:
         return [[e.copy() for e in n] for n in self.adj]
+
+    def get_labels(self) -> Sequence[str]:
+        return self.labels.copy()
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Sequence[Edge]:
@@ -195,6 +228,12 @@ class ListGraph(Graph):
     def degree(self, v: int) -> int:
         return int(self.directed) * self.in_degree(v) + self.out_degree(v)
 
+    def get_label(self, v: int) -> str:
+        if not 0 <= v < self.order:
+            raise IndexError(f"vertex ({v}) does not exist in graph")
+
+        return self.labels[v]
+
     # VERTEX CONTROL
     def add_vertex(self, amount = 1) -> None:
         if amount < 0:
@@ -202,6 +241,7 @@ class ListGraph(Graph):
 
         self.order += amount
         self.adj.extend([[] for _ in range(amount)])
+        self.labels.extend([""] * amount)
 
     # TODO remove_vertex
 
@@ -209,6 +249,23 @@ class ListGraph(Graph):
         self.order = 0
         self.size = 0
         self.adj = []
+        self.labels = []
+
+    def add_vertex_by_label(self, label: str) -> None:
+        self.order += 1
+        self.adj.append([])
+        self.labels.append(label)
+
+    def add_vertices_by_label(self, labels: Sequence[str]) -> None:
+        self.order += len(labels)
+        self.adj.extend([[] for _ in range(len(labels))])
+        self.labels.extend(labels)
+
+    def set_label(self, v: int, label: str) -> None:
+        if not 0 <= v < self.order:
+            raise IndexError(f"vertex ({v}) does not exist in graph")
+
+        self.labels[v] = label
 
     # EDGE ACCESS
     def is_edge(self, a: int, b: int) -> bool:
@@ -296,7 +353,15 @@ class ListGraph(Graph):
                 edge.parent = graph
                 graph.adj[edge.origin].append(edge)
 
+        graph.labels = self.get_labels()
+
         return graph
+
+    def __copy__(self) -> ListGraph:
+        return self.copy()
+
+    def __deepcopy__(self, memo) -> ListGraph:
+        return self.copy()
 
     def reverse(self) -> None:
         if not self.directed:
@@ -323,6 +388,8 @@ class ListGraph(Graph):
                 edge.origin, edge.dest = edge.dest, edge.origin
                 graph.adj[edge.origin].append(edge)
 
+        graph.labels = self.get_labels()
+
         return graph
 
 
@@ -347,11 +414,12 @@ class MatrixGraph(Graph):
         self.default_value = default_value
 
         self.adj = [[default_value] * v for _ in range(v)]
+        self.labels = [""] * v
 
     def __str__(self) -> str:
         result = ""
-        for i, n in enumerate(self.adj):
-            result += str(i) + " | "
+        for i, (n, l) in enumerate(zip(self.adj, self.labels)):
+            result += str(i) + ("" if l == "" else f" ({l})") + " | "
             for e in n:
                 result += str(e) + ' '
             result += '\n'
@@ -359,6 +427,9 @@ class MatrixGraph(Graph):
 
     def get_data(self) -> Sequence[Sequence[int]]:
         return [n.copy() for n in self.adj]
+
+    def get_labels(self) -> Sequence[str]:
+        return self.labels.copy()
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Sequence[int]:
@@ -396,6 +467,12 @@ class MatrixGraph(Graph):
     def degree(self, v: int) -> int:
         return int(self.directed) * self.in_degree(v) + self.out_degree(v)
 
+    def get_label(self, v: int) -> str:
+        if not 0 <= v < self.order:
+            raise IndexError(f"vertex ({v}) does not exist in graph")
+
+        return self.labels[v]
+
     # VERTEX CONTROL
     def add_vertex(self, amount = 1) -> None:
         if amount < 0:
@@ -405,6 +482,7 @@ class MatrixGraph(Graph):
         for n in self.adj:
             n.extend([self.default_value] * amount)
         self.adj.extend([[self.default_value] * self.order for _ in range(amount)])
+        self.labels.extend([""] * amount)
 
     # TODO remove_vertex
 
@@ -412,6 +490,27 @@ class MatrixGraph(Graph):
         self.order = 0
         self.size = 0
         self.adj = []
+        self.labels = []
+
+    def add_vertex_by_label(self, label: str) -> None:
+        self.order += 1
+        for n in self.adj:
+            n.append(self.default_value)
+        self.adj.append([self.default_value] * self.order)
+        self.labels.append(label)
+
+    def add_vertices_by_label(self, labels: Sequence[str]) -> None:
+        self.order += len(labels)
+        for n in self.adj:
+            n.extend([self.default_value] * len(labels))
+        self.adj.extend([[self.default_value] * self.order for _ in range(len(labels))])
+        self.labels.extend(labels)
+
+    def set_label(self, v: int, label: str) -> None:
+        if not 0 <= v < self.order:
+            raise IndexError(f"vertex ({v}) does not exist in graph")
+
+        self.labels[v] = label
 
     # EDGE ACCESS
     def is_edge(self, a: int, b: int) -> bool:
@@ -484,8 +583,15 @@ class MatrixGraph(Graph):
         graph = MatrixGraph(self.order, self.weighted, self.directed, self.default_value)
         graph.size = self.size
         graph.adj = self.get_data()
+        graph.labels = self.get_labels()
 
         return graph
+
+    def __copy__(self) -> MatrixGraph:
+        return self.copy()
+
+    def __deepcopy__(self, memo) -> MatrixGraph:
+        return self.copy()
 
     def reverse(self) -> None:
         if not self.directed:
@@ -526,6 +632,7 @@ class SuccessorGraph:
         self.weighted = weighted
 
         self.adj: list[Edge | None] = [None] * v
+        self.labels = [""] * v
 
     def __str__(self) -> str:
         return ' '.join([str(i) for i in self.adj])
@@ -534,6 +641,11 @@ class SuccessorGraph:
         """returns the graph's raw adjacency data"""
 
         return [e.copy() for e in self.adj]
+
+    def get_labels(self) -> Sequence[str]:
+        """returns the labels of all vertices"""
+
+        return self.labels.copy()
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Edge:
@@ -579,6 +691,14 @@ class SuccessorGraph:
 
         return self.in_degree(v) + self.out_degree(v)
 
+    def get_label(self, v: int) -> str:
+        """returns the label of a vertex"""
+
+        if not 0 <= v < self.order:
+            raise IndexError(f"vertex ({v}) does not exist in graph")
+
+        return self.labels[v]
+
     # VERTEX CONTROL
     def add_vertex(self, amount = 1) -> None:
         """push vertices to the end of the graph (newest indices)"""
@@ -587,7 +707,8 @@ class SuccessorGraph:
             raise ValueError("amount must not be negative")
 
         self.order += amount
-        self.adj.extend([None for _ in range(amount)])
+        self.adj.extend([None] * amount)
+        self.labels.extend([""] * amount)
 
     # TODO remove_vertex
 
@@ -595,6 +716,29 @@ class SuccessorGraph:
         self.order = 0
         self.size = 0
         self.adj = []
+        self.labels = []
+
+    def add_vertex_by_label(self, label: str) -> None:
+        """push a vertex with a designated label to the end of the graph (newest index)"""
+
+        self.order += 1
+        self.adj.append(None)
+        self.labels.append(label)
+
+    def add_vertices_by_label(self, labels: Sequence[str]) -> None:
+        """push vertices with designated labels to the end of the graph (newest indices)"""
+
+        self.order += len(labels)
+        self.adj.extend([None] * len(labels))
+        self.labels.extend(labels)
+
+    def set_label(self, v: int, label: str) -> None:
+        """set the label of a vertex"""
+
+        if not 0 <= v < self.order:
+            raise IndexError(f"vertex ({v}) does not exist in graph")
+
+        self.labels[v] = label
 
     # EDGE ACCESS
     def is_edge(self, a: int, b: int) -> bool:
@@ -719,4 +863,12 @@ class SuccessorGraph:
             edge.parent = graph
             graph.adj[i] = edge
 
+        graph.labels = self.get_labels()
+
         return graph
+
+    def __copy__(self) -> SuccessorGraph:
+        return self.copy()
+
+    def __deepcopy__(self, memo) -> SuccessorGraph:
+        return self.copy()

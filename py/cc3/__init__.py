@@ -19,7 +19,7 @@ def new(variant = "list", *args, **kwargs) -> Graph | SuccessorGraph:
 
 ''' TODOS
 
->>> tree functions on graphs (is_tree, is_forest, etc.)
+tree functions on graphs (is_tree, is_forest, etc.)
 
 tree class with:
     set_root, get_centers, get_diameter, get_radius, get_leaves
@@ -38,9 +38,9 @@ behaviour with default operators (+, -, edge in graph, is, ==, etc.)
 
 successor graph after_n_steps function (algorithm header?)
 
-each node should have a label
-rewrite graphics module to run in parallel (diff thread)
-    maybe not tkinter? (eg. pygame, pyopengl, pyqt)
+>>> each node should have a label
+>>> rewrite graphics module to run in parallel (diff thread)
+>>> maybe not tkinter? (eg. pygame, pyopengl, pyqt)
 
 the traversal boilerplate thingy oh no (final boss)
 

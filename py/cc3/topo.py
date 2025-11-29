@@ -25,7 +25,7 @@ def _topo_sort_list(graph: ListGraph) -> Sequence[int]:
     """helper function of topo_sort for ListGraphs"""
 
     if not graph.directed:
-        raise TypeError("topological sorting not supported on undirected graphs")
+        raise TypeError("topological sorting not supported for undirected graphs")
 
     in_degree = [0] * graph.order
     for n in graph.adj:
@@ -53,7 +53,7 @@ def _topo_sort_matrix(graph: MatrixGraph) -> Sequence[int]:
     """helper function of topo_sort for ListGraphs"""
 
     if not graph.directed:
-        raise TypeError("topological sorting not supported on undirected graphs")
+        raise TypeError("topological sorting not supported for undirected graphs")
 
     in_degree = [0] * graph.order
     for n in graph.adj:
