@@ -1,35 +1,101 @@
-import tkinter as tk
-import numpy as np
-import math, random
+import pyglet, numpy, random, math
+from typing import Tuple
 
 from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
 
 
-# CONSTANTS
-screen_width = 400
-screen_height = 300
-target_fps = 60
+class Attributes:
+    """class that stores all graphics attributes"""
 
-node_radius = 10
-outline_thickness = 2
-edge_thickness = 2
+    def __init__(self) -> None:
+        self.window_width = 1000
+        self.window_height = 750
+        self.window_fps = 1 / 60
+        self.window_antialias = 8
 
-colour_background = "#ffffff"
-colour_foreground = "#ffffff"
-colour_vertex = "#474747"
-colour_vertex_outline = "#616161"
-colour_vertex_highlight = "#4978cc"
-colour_edge = "#364a69"
+        self.colour_bg = (206, 213, 222)
+        self.colour_fg = (255, 255, 255)
+        self.colour_vertex = (57, 67, 82)
+        self.colour_outline = (44, 52, 64)
+        self.colour_outline_selected = (82, 112, 156)
+        self.colour_edge = (26, 43, 69)
 
-escape_force = 0.01
-repulsion = 2000
-spring_length = 100
-spring_stiffness = 0.03
-damping = 0.6
-center_gravity = 0.01
+        self.vertex_radius = 30
+        self.vertex_quality = None
+        self.vertex_outline = 5
+
+        self.edge_thickness = 5
+
+        self.physics_escape_force = 0.01
+        self.physics_repulsion = 20000
+        self.physics_damping = 0.6
+        self.physics_spring_stiffness = 0.05
+        self.physics_spring_length = 200
 
 
-def get_edges(graph: Graph | SuccessorGraph) -> np.ndarray:
+_attributes = Attributes()
+
+def reset_attributes() -> None:
+    """reset all graphics attributes to their default"""
+    _attributes.__init__()
+
+def _valid_attribute(name, target_name, value, target_type) -> bool:
+    """helper function of set_attribute that checks if name-value combination is valid"""
+
+    if name == target_name:
+        if isinstance(value, target_type):
+            return True
+        raise TypeError(f"attribute '{name}' must be {target_type}, not {type(value).__name__}")
+    return False
+
+def set_attribute(name, value) -> None:
+    """set the graphics module's properties (e.g. window resolution, fps, physics constants, etc.)
+
+    here is a list of available attributes:"""
+
+    if _valid_attribute(name, "window_width", value, int):
+        _attributes.window_width = value
+    elif _valid_attribute(name, "window_height", value, int):
+        _attributes.window_height = value
+    elif _valid_attribute(name, "window_fps", value, int):
+        _attributes.window_fps = 1 / value
+    elif _valid_attribute(name, "window_antialias", value, int):
+        _attributes.window_antialias = value
+
+    elif _valid_attribute(name, "colour_bg", value, Tuple[int, int, int]):
+        _attributes.colour_bg = value
+    elif _valid_attribute(name, "colour_fg", value, Tuple[int, int, int]):
+        _attributes.colour_fg = value
+    elif _valid_attribute(name, "colour_vertex", value, Tuple[int, int, int]):
+        _attributes.colour_vertex = value
+    elif _valid_attribute(name, "colour_outline", value, Tuple[int, int, int]):
+        _attributes.colour_outline = value
+    elif _valid_attribute(name, "colour_outline_selected", value, Tuple[int, int, int]):
+        _attributes.colour_outline_selected = value
+
+    elif _valid_attribute(name, "vertex_radius", value, int):
+        _attributes.vertex_radius = value
+    elif _valid_attribute(name, "vertex_quality", value, int | None):
+        _attributes.vertex_quality = value
+    elif _valid_attribute(name, "vertex_outline", value, int):
+        _attributes.vertex_outline = value
+
+    elif _valid_attribute(name, "physics_escape_force", value, float):
+        _attributes.physics_escape_force = value
+    elif _valid_attribute(name, "physics_repulsion", value, float):
+        _attributes.physics_repulsion = value
+    elif _valid_attribute(name, "physics_damping", value, float):
+        _attributes.physics_damping = value
+    elif _valid_attribute(name, "physics_spring_stiffness", value, float):
+        _attributes.physics_spring_stiffness = value
+    elif _valid_attribute(name, "physics_spring_length", value, float):
+        _attributes.physics_spring_length = value
+
+    else:
+        raise TypeError(f"attribute '{name}' does not exist")
+
+
+def get_edges(graph: Graph | SuccessorGraph) -> numpy.ndarray:
     """helper function that turns the edge data of a graph into a numpy array"""
 
     edges = []
@@ -54,165 +120,183 @@ def get_edges(graph: Graph | SuccessorGraph) -> np.ndarray:
             if e is not None:
                 edges.append((e.origin, e.dest))
 
-    return np.array(edges, dtype = np.int64)
+    return numpy.array(edges, dtype = numpy.int32)
+
+def randomize_positions(amount):
+    """create a random list of vertex positions"""
+
+    vertex_position = [(random.randint(_attributes.vertex_radius, _attributes.window_width - _attributes.vertex_radius),
+                        random.randint(_attributes.vertex_radius, _attributes.window_height - _attributes.vertex_radius))
+                        for _ in range(amount)]
+    return numpy.array(vertex_position, dtype = numpy.float32)
 
 def display(graph: Graph | SuccessorGraph) -> None:
-    """create an interactive visualization of the provided graph in tkinter"""
+    """create an interactive visualization of the provided graph"""
 
-    # tkinter initialization
-    root = tk.Tk()
-    canvas = tk.Canvas(root, width = screen_width, height = screen_height, bg = colour_background)
-    canvas.pack()
+    config = pyglet.gl.Config(sample_buffers = 1, samples = 8, double_buffer = True)
+    window = pyglet.window.Window(_attributes.window_width, _attributes.window_height, "cc3", config = config)
+    pyglet.gl.glClearColor(*_attributes.colour_bg, 1)
+    batch = pyglet.graphics.Batch()
 
-    # initialize data
-    edges = get_edges(graph)
 
-    position = np.array(
-        [[random.randint(10, screen_width - 10), random.randint(10, screen_height - 10)] for _ in range(graph.order)])
-    velocity = np.zeros((graph.order, 2))
+    class Data:
+        """object that manages the graph visualization data"""
 
-    selected_vertex = None
+        def __init__(self) -> None:
+            self.edges = get_edges(graph)
+            self.vertex_position = randomize_positions(graph.order)
+            self.vertex_velocity = numpy.zeros((graph.order, 2), dtype = numpy.float32)
+            self.vertex_movement = numpy.zeros((graph.order, 2), dtype = numpy.float32)
 
-    # create canvas objects
-    vertices = []
-    labels = []
-    lines = []
+            self.selected_vertex = None
 
-    arrow = tk.LAST if isinstance(graph, SuccessorGraph) or graph.directed else None
+        def vertex_repulsion(self):
+            """force each vertex apart"""
+
+            displacement = self.vertex_position[:, numpy.newaxis, :] - self.vertex_position[numpy.newaxis, :, :]
+            dsq = numpy.sum(displacement ** 2, axis = 2)
+            numpy.fill_diagonal(dsq, numpy.inf)
+            distance = numpy.maximum(numpy.sqrt(dsq), _attributes.physics_escape_force)
+            dsq = numpy.maximum(dsq, _attributes.physics_escape_force)
+
+            magnitude = _attributes.physics_repulsion / dsq
+            unit_force = displacement / distance[:, :, numpy.newaxis]
+            force = magnitude[:, :, numpy.newaxis] * unit_force
+            net_force = numpy.sum(force, axis = 1)
+
+            self.vertex_movement += net_force
+
+        def edge_tension(self) -> None:
+            """edges act as springs, holding the vertices in place"""
+
+            displacement = self.vertex_position[self.edges[:, 1]] - self.vertex_position[self.edges[:, 0]]
+
+            distance = numpy.linalg.norm(displacement, axis = 1)
+            distance = numpy.maximum(distance, _attributes.physics_escape_force)
+
+            magnitude = _attributes.physics_spring_stiffness * (distance - _attributes.physics_spring_length)
+
+            unit_force = displacement / distance[:, numpy.newaxis]
+            force = magnitude[:, numpy.newaxis] * unit_force
+            numpy.add.at(self.vertex_movement, self.edges[:, 0], force)
+            numpy.add.at(self.vertex_movement, self.edges[:, 1], -force)
+
+        def central_gravity(self) -> None:
+            """pulls the whole graph to the center"""
+
+            center = numpy.sum(self.vertex_position)
+            displacement = -(self.vertex_position - center)
+            self.vertex_movement += displacement * 0.01
+
+        def update(self) -> None:
+            """update graph visuals"""
+
+            self.vertex_movement.fill(0)
+            self.vertex_repulsion()
+            self.edge_tension()
+            #self.central_gravity()
+
+            excluded_vel = None
+            excluded_pos = None
+            if self.selected_vertex is not None:
+                excluded_vel = self.vertex_velocity[self.selected_vertex].copy()
+                excluded_pos = self.vertex_position[self.selected_vertex].copy()
+
+            self.vertex_velocity = (self.vertex_velocity + self.vertex_movement) * _attributes.physics_damping
+            self.vertex_position += self.vertex_velocity
+
+            if self.selected_vertex is not None:
+                self.vertex_velocity[self.selected_vertex] = excluded_vel
+                self.vertex_position[self.selected_vertex] = excluded_pos
+
+            self.vertex_position[:, 0] = numpy.clip(self.vertex_position[:, 0], _attributes.vertex_radius,
+                                                    _attributes.window_width - _attributes.vertex_radius)
+            self.vertex_position[:, 1] = numpy.clip(self.vertex_position[:, 1], _attributes.vertex_radius,
+                                                    _attributes.window_height - _attributes.vertex_radius)
+
+
+    data = Data()
+
+    vertex_objects = []
+    outline_objects = []
+    index_objects = []
+    edge_objects = []
+
+    for n in range(graph.order):
+        group = pyglet.graphics.Group(n + 1)
+        outline_objects.append(pyglet.shapes.Circle(0, 0, _attributes.vertex_radius + _attributes.vertex_outline,
+                                                    color = _attributes.colour_outline, batch = batch, group = group))
+        vertex_objects.append(pyglet.shapes.Circle(0, 0, _attributes.vertex_radius,
+                                                   color = _attributes.colour_vertex, batch = batch, group = group))
+
+        index_objects.append(pyglet.text.Label(str(n), 0, 0, anchor_x = "center", anchor_y = "bottom",
+                                               font_name = "Arial", font_size = _attributes.vertex_radius * 0.8,
+                                               batch = batch, group = group))
+
+    group = pyglet.graphics.Group(0)
     for i in range(graph.size):
-        lines.append(canvas.create_line(0, 0, 0, 0, fill = colour_edge, width = edge_thickness, arrow = arrow))
+        edge_objects.append(pyglet.shapes.Line(0, 0, 0, 0, _attributes.edge_thickness,
+                                               _attributes.colour_edge, batch = batch, group = group))
 
-    for i in range(graph.order):
-        vertices.append(canvas.create_oval(0, 0, 0, 0, fill = colour_vertex, outline = colour_vertex_outline,
-                                           width = outline_thickness))
-        labels.append(canvas.create_text(0, 0, text = str(i), font = ("Arial", node_radius * 4 // 5, "bold"),
-                                         fill = colour_foreground))
 
-    # UPDATE
-    def vertex_repulsion(movement: np.ndarray) -> None:
-        """force each vertex apart"""
+    def refresh() -> None:
+        """update position data"""
 
-        displacement = position[:, np.newaxis, :] - position[np.newaxis, :, :]
-        dsq = np.sum(displacement ** 2, axis = 2, dtype = np.float64)
-        np.fill_diagonal(dsq, np.inf)
-        distance = np.maximum(np.sqrt(dsq), escape_force)
-        dsq = np.maximum(dsq, escape_force)
+        for i in range(graph.order):
+            vertex_objects[i].x, vertex_objects[i].y = data.vertex_position[i]
+            outline_objects[i].x, outline_objects[i].y = data.vertex_position[i]
 
-        magnitude = repulsion / dsq
-        unit_force = displacement / distance[:, :, np.newaxis]
-        force = magnitude[:, :, np.newaxis] * unit_force
-        net_force = np.sum(force, axis = 1)
+            index_objects[i].x = data.vertex_position[i][0]
+            index_objects[i].y = data.vertex_position[i][1] - index_objects[i].content_height / 2
 
-        movement += net_force
-
-    def edge_tension(movement: np.ndarray) -> None:
-        """edges act as springs, holding the vertices in place"""
-
-        displacement = position[edges[:, 1]] - position[edges[:, 0]]
-
-        distance = np.linalg.norm(displacement, axis = 1)
-        distance = np.maximum(distance, escape_force)
-
-        magnitude = spring_stiffness * (distance - spring_length)
-
-        unit_force = displacement / distance[:, np.newaxis]
-        force = magnitude[:, np.newaxis] * unit_force
-        np.add.at(movement, edges[:, 0], force)
-        np.add.at(movement, edges[:, 1], -force)
-
-    def central_gravity(movement: np.ndarray) -> None:
-        """gravity that holds vertices to the center of the frame"""
-
-        center = np.array([screen_width / 2, screen_height / 2])
-        displacement = center - position
-        movement += displacement * center_gravity
-
-    def update() -> None:
-        """apply physics calculations each frame
-
-        received partial physics help from ChatGPT"""
-
-        nonlocal position, velocity
-
-        movement = np.zeros((graph.order, 2))
-        vertex_repulsion(movement)
-        edge_tension(movement)
-        central_gravity(movement)
-
-        # update position and velocity
-        excluded_vel = None
-        excluded_pos = None
-        if selected_vertex is not None:
-            excluded_vel = velocity[selected_vertex]
-            excluded_pos = position[selected_vertex]
-
-        velocity = (velocity + movement) * damping
-        position = position.astype(np.float64)
-        position += velocity
-
-        if selected_vertex is not None:
-            velocity[selected_vertex] = excluded_vel
-            position[selected_vertex] = excluded_pos
-
-        position[:, 0] = np.clip(position[:, 0], node_radius, screen_width - node_radius)
-        position[:, 1] = np.clip(position[:, 1], node_radius, screen_height - node_radius)
-
-        line_pos = position[edges]
-        distance = line_pos[:, 1] - line_pos[:, 0]
-        ratio = node_radius / np.maximum(np.linalg.norm(distance, axis = 1)[:, None], escape_force)
+        edge_position = data.vertex_position[data.edges]
+        distance = edge_position[:, 1] - edge_position[:, 0]
+        ratio = _attributes.vertex_radius / numpy.maximum(numpy.linalg.norm(distance, axis = 1)[:, None],
+                                                          _attributes.physics_escape_force)
         offset = distance * ratio
-        line_pos[:, 0] += offset
-        line_pos[:, 1] -= offset
+        edge_position[:, 0] += offset
+        edge_position[:, 1] -= offset
 
-        # update graph
-        for i, ((x1, y1), (x2, y2)) in enumerate(line_pos):
-            canvas.coords(lines[i], x1, y1, x2, y2)
+        for i, (p1, p2) in enumerate(edge_position):
+            edge_objects[i].x, edge_objects[i].y = p1
+            edge_objects[i].x2, edge_objects[i].y2 = p2
 
-        for i, (x, y) in enumerate(position):
-            canvas.coords(vertices[i], x - node_radius, y - node_radius, x + node_radius, y + node_radius)
-            canvas.coords(labels[i], x, y)
 
-        root.after(1000 // target_fps, update)
-
-    # MOUSE ACTIONS
-    def select_vertex(event) -> None:
-        """select a vertex upon mouse down"""
-
-        nonlocal selected_vertex
+    @window.event
+    def on_mouse_press(x, y, button, modifiers) -> None:
+        if button != pyglet.window.mouse.LEFT:
+            return
 
         minimum_dist = float('inf')
         minimum_index = None
 
-        for i, (x, y) in enumerate(position):
-            dist = math.sqrt((event.x - x) ** 2 + (event.y - y) ** 2)
-            if dist <= node_radius and dist < minimum_dist:
+        for i, p in enumerate(data.vertex_position):
+            dist = math.sqrt((p[0] - x) ** 2 + (p[1] - y) ** 2)
+            if dist <= _attributes.vertex_radius and dist < minimum_dist:
                 minimum_dist = dist
                 minimum_index = i
 
-        selected_vertex = minimum_index
-        if selected_vertex is not None:
-            canvas.itemconfig(vertices[selected_vertex], outline = colour_vertex_highlight)
+        data.selected_vertex = minimum_index
+        if data.selected_vertex is not None:
+            outline_objects[data.selected_vertex].color = _attributes.colour_outline_selected
 
-    def deselect_vertex(event) -> None:
-        """deselect a vertex upon mouse up"""
+    @window.event
+    def on_mouse_release(x, y, button, modifiers) -> None:
+        if data.selected_vertex is not None:
+            outline_objects[data.selected_vertex].color = _attributes.colour_outline
+        data.selected_vertex = None
 
-        nonlocal selected_vertex
+    @window.event
+    def on_mouse_drag(x, y, dx, dy, buttons, modifiers) -> None:
+        if data.selected_vertex is not None:
+            data.vertex_position[data.selected_vertex] = x, y
 
-        if selected_vertex is not None:
-            canvas.itemconfig(vertices[selected_vertex], outline = colour_vertex_outline)
-        selected_vertex = None
+    @window.event
+    def on_draw() -> None:
+        data.update()
+        refresh()
+        window.clear()
+        batch.draw()
 
-    def drag_vertex(event) -> None:
-        """set the position of a vertex on drag"""
 
-        if selected_vertex is not None:
-            position[selected_vertex][0] = event.x
-            position[selected_vertex][1] = event.y
-
-    canvas.bind("<ButtonPress-1>", select_vertex)
-    canvas.bind("<ButtonRelease-1>", deselect_vertex)
-    canvas.bind("<B1-Motion>", drag_vertex)
-
-    # MAINLOOP
-    update()
-    tk.mainloop()
+    pyglet.app.run(_attributes.window_fps)

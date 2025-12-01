@@ -41,6 +41,7 @@ successor graph after_n_steps function (algorithm header?)
 >>> each node should have a label
 >>> rewrite graphics module to run in parallel (diff thread)
 >>> maybe not tkinter? (eg. pygame, pyopengl, pyqt)
+>>> ADD FLAGS INSTEAD OF STRINGS
 
 the traversal boilerplate thingy oh no (final boss)
 
