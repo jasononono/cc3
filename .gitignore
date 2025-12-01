@@ -2,9 +2,10 @@
 .vscode/
 .DS_Store
 **/__pycache__/
+src/cc3.egg-info/
 
 notes/
 rough/
 
 zoomlink.pdf
-py/main.py
+src/main.py
