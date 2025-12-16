@@ -1,0 +1,30 @@
+>>> graph label access (graph.set_edge("labelA", "labelB"))
+>>> rewrite graphics module
+>>>     flags instead of strings for attributes
+
+tree functions on graphs (is_tree, is_forest, etc.)
+
+tree class with:
+    set_root, get_centers, get_diameter, get_radius, get_leaves
+    is_ancestor, is_child, is_parent, is_descendant
+    get_ancestors, get_children, get_parents, get_descendants
+
+shorthand for special graph objects (QF, DAGs, etc.)
+
+toposort_all should return a set of all unique topo-sorts of a graph
+
+dependency function of Graph (does a node come before another node in the topo sort)
+
+eulerian algorithms under euler header
+
+move is_functional into algorithms header and apply for all graphs (maybe split into is_successor?)
+graph to graph conversion / comparison function (change variant, from raw data, etc.)
+behaviour with default operators (+, -, edge in graph, is, ==, etc.)
+
+successor graph after_n_steps function (algorithm header?)
+
+DSU (including QF, optimizations)
+
+MST function that returns new graph
+
+the traversal boilerplate thingy oh no (final boss)
