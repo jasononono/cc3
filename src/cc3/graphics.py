@@ -49,9 +49,7 @@ def _valid_attribute(name, target_name, value, target_type) -> bool:
     return False
 
 def set_attribute(name, value) -> None:
-    """set the graphics module's properties (e.g. window resolution, fps, physics constants, etc.)
-
-    here is a list of available attributes:"""
+    """set the graphics module's properties (e.g. window resolution, fps, physics constants, etc.)"""
 
     if _valid_attribute(name, "window_width", value, int):
         _attributes.window_width = value
