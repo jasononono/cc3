@@ -7,7 +7,7 @@ def has_cycle(graph: Graph | SuccessorGraph) -> bool:
 
     if isinstance(graph, SuccessorGraph):
         return has_cycle_successor(graph)
-    if graph.directed:
+    elif graph.directed:
         return has_cycle_directed(graph)
     return has_cycle_undirected(graph)
 

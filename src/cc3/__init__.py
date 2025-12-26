@@ -3,6 +3,8 @@ from .algorithms import *
 from .traversal import *
 from .cycle import *
 from .topo import *
+from .labeling import *
+from .flags import *
 from .graphics import display
 
 

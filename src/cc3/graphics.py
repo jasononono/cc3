@@ -2,6 +2,7 @@ import pyglet, numpy, random, math
 from typing import Tuple
 
 from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
+from .flags import *
 
 
 class Attributes:
@@ -48,49 +49,49 @@ def _valid_attribute(name, target_name, value, target_type) -> bool:
         raise TypeError(f"attribute '{name}' must be {target_type}, not {type(value).__name__}")
     return False
 
-def set_attribute(name, value) -> None:
+def set_attribute(flag, value) -> None:
     """set the graphics module's properties (e.g. window resolution, fps, physics constants, etc.)"""
 
-    if _valid_attribute(name, "window_width", value, int):
+    if _valid_attribute(flag, WINDOW_WIDTH, value, int):
         _attributes.window_width = value
-    elif _valid_attribute(name, "window_height", value, int):
+    elif _valid_attribute(flag, WINDOW_HEIGHT, value, int):
         _attributes.window_height = value
-    elif _valid_attribute(name, "window_fps", value, int):
+    elif _valid_attribute(flag, WINDOW_FPS, value, int):
         _attributes.window_fps = 1 / value
-    elif _valid_attribute(name, "window_antialias", value, int):
+    elif _valid_attribute(flag, WINDOW_ANTIALIAS, value, int):
         _attributes.window_antialias = value
 
-    elif _valid_attribute(name, "colour_bg", value, Tuple[int, int, int]):
+    elif _valid_attribute(flag, COLOUR_BG, value, Tuple[int, int, int]):
         _attributes.colour_bg = value
-    elif _valid_attribute(name, "colour_fg", value, Tuple[int, int, int]):
+    elif _valid_attribute(flag, COLOUR_FG, value, Tuple[int, int, int]):
         _attributes.colour_fg = value
-    elif _valid_attribute(name, "colour_vertex", value, Tuple[int, int, int]):
+    elif _valid_attribute(flag, COLOUR_VERTEX, value, Tuple[int, int, int]):
         _attributes.colour_vertex = value
-    elif _valid_attribute(name, "colour_outline", value, Tuple[int, int, int]):
+    elif _valid_attribute(flag, COLOUR_OUTLINE, value, Tuple[int, int, int]):
         _attributes.colour_outline = value
-    elif _valid_attribute(name, "colour_outline_selected", value, Tuple[int, int, int]):
+    elif _valid_attribute(flag, COLOUR_OUTLINE_SELECTED, value, Tuple[int, int, int]):
         _attributes.colour_outline_selected = value
 
-    elif _valid_attribute(name, "vertex_radius", value, int):
+    elif _valid_attribute(flag, VERTEX_RADIUS, value, int):
         _attributes.vertex_radius = value
-    elif _valid_attribute(name, "vertex_quality", value, int | None):
+    elif _valid_attribute(flag, VERTEX_QUALITY, value, int | None):
         _attributes.vertex_quality = value
-    elif _valid_attribute(name, "vertex_outline", value, int):
+    elif _valid_attribute(flag, VERTEX_OUTLINE, value, int):
         _attributes.vertex_outline = value
 
-    elif _valid_attribute(name, "physics_escape_force", value, float):
+    elif _valid_attribute(flag, PHYSICS_ESCAPE_FORCE, value, float):
         _attributes.physics_escape_force = value
-    elif _valid_attribute(name, "physics_repulsion", value, float):
+    elif _valid_attribute(flag, PHYSICS_REPULSION, value, float):
         _attributes.physics_repulsion = value
-    elif _valid_attribute(name, "physics_damping", value, float):
+    elif _valid_attribute(flag, PHYSICS_DAMPING, value, float):
         _attributes.physics_damping = value
-    elif _valid_attribute(name, "physics_spring_stiffness", value, float):
+    elif _valid_attribute(flag, PHYSICS_SPRING_STIFFNESS, value, float):
         _attributes.physics_spring_stiffness = value
-    elif _valid_attribute(name, "physics_spring_length", value, float):
+    elif _valid_attribute(flag, PHYSICS_SPRING_LENGTH, value, float):
         _attributes.physics_spring_length = value
 
     else:
-        raise TypeError(f"attribute '{name}' does not exist")
+        raise TypeError(f"attribute '{flag}' does not exist")
 
 
 def get_edges(graph: Graph | SuccessorGraph) -> numpy.ndarray:

@@ -1,6 +1,7 @@
->>> graph label access (graph.set_edge("labelA", "labelB"))
 >>> rewrite graphics module
 >>>     flags instead of strings for attributes
+
+align printing graphs
 
 tree functions on graphs (is_tree, is_forest, etc.)
 
@@ -16,6 +17,8 @@ toposort_all should return a set of all unique topo-sorts of a graph
 dependency function of Graph (does a node come before another node in the topo sort)
 
 eulerian algorithms under euler header
+
+remove vertices & edges
 
 move is_functional into algorithms header and apply for all graphs (maybe split into is_successor?)
 graph to graph conversion / comparison function (change variant, from raw data, etc.)
