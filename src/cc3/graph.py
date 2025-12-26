@@ -176,13 +176,18 @@ class ListGraph(Graph):
         self.labels = [""] * v
 
     def __str__(self) -> str:
-        result = ""
-        for i, (n, l) in enumerate(zip(self.adj, self.labels)):
-            result += str(i) + ("" if l == "" else f" ({l})") + " | "
+        result = []
+        align = 0
+        for i, l in enumerate(self.labels):
+            result.append(str(i) + ("" if l == "" else f"({l})"))
+            align = max(align, len(result[-1]))
+
+        for i, n in enumerate(self.adj):
+            result[i] += ' ' * (align - len(result[i])) + " | "
             for e in n:
-                result += str(e) + ' '
-            result += '\n'
-        return result.strip()
+                result[i] += str(e) + ' '
+
+        return '\n'.join(result).strip()
 
     def get_data(self) -> Sequence[Sequence[Edge]]:
         return [[e.copy() for e in n] for n in self.adj]
@@ -417,13 +422,30 @@ class MatrixGraph(Graph):
         self.labels = [""] * v
 
     def __str__(self) -> str:
-        result = ""
-        for i, (n, l) in enumerate(zip(self.adj, self.labels)):
-            result += str(i) + ("" if l == "" else f" ({l})") + " | "
-            for e in n:
-                result += str(e) + ' '
-            result += '\n'
-        return result.strip()
+        result = []
+        labels = []
+        label_align = 0
+        for i, l in enumerate(self.labels):
+            result.append(str(i) + ("" if l == "" else f"({l})"))
+            labels.append(result[-1])
+            label_align = max(label_align, len(result[-1]))
+        for i in range(self.order):
+            result[i] += ' ' * (label_align - len(result[i])) + " | "
+
+        for i in range(self.order):
+            align = 0
+            for j in range(self.order):
+                string = str(self.adj[j][i])
+                result[j] += string
+                align = max(align, len(string))
+            align = max(align, len(labels[i]))
+            for j in range(self.order):
+                result[j] += ' ' * (align - len(str(self.adj[j][i])) + 1)
+            labels[i] += ' ' * (align - len(labels[i]))
+
+        labels = ' ' * (label_align + 3) + ' '.join(labels)
+        result.insert(0, labels)
+        return '\n'.join(result).rstrip()
 
     def get_data(self) -> Sequence[Sequence[int]]:
         return [n.copy() for n in self.adj]
@@ -635,7 +657,14 @@ class SuccessorGraph:
         self.labels = [""] * v
 
     def __str__(self) -> str:
-        return ' '.join([str(i) for i in self.adj])
+        labels = ""
+        string = ""
+        for i, (n, l) in enumerate(zip(self.adj, self.labels)):
+            label = str(i) + ("" if l == "" else f"({l})")
+            align = max(len(label), len(str(n))) + 1
+            labels += label + ' ' * (align - len(label))
+            string += str(n) + ' ' * (align - len(str(n)))
+        return labels + '\n' + string
 
     def get_data(self) -> Sequence[Edge | None]:
         """returns the graph's raw adjacency data"""

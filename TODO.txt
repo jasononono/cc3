@@ -1,9 +1,6 @@
 >>> rewrite graphics module
->>>     flags instead of strings for attributes
 
-align printing graphs
-
-tree functions on graphs (is_tree, is_forest, etc.)
+>>> tree functions on graphs (is_tree, is_forest, etc.)
 
 tree class with:
     set_root, get_centers, get_diameter, get_radius, get_leaves
