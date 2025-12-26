@@ -184,7 +184,7 @@ def display(graph: Graph | SuccessorGraph) -> None:
         def central_gravity(self) -> None:
             """pulls the whole graph to the center"""
 
-            center = numpy.sum(self.vertex_position)
+            center = numpy.mean(self.vertex_position)
             displacement = -(self.vertex_position - center)
             self.vertex_movement += displacement * 0.01
 
@@ -194,7 +194,7 @@ def display(graph: Graph | SuccessorGraph) -> None:
             self.vertex_movement.fill(0)
             self.vertex_repulsion()
             self.edge_tension()
-            #self.central_gravity()
+            self.central_gravity()
 
             excluded_vel = None
             excluded_pos = None
