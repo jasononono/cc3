@@ -9,8 +9,6 @@ tree class with:
 
 shorthand for special graph objects (QF, DAGs, etc.)
 
-custom error flags VertexError, TreeError, etc.
-
 toposort_all should return a set of all unique topo-sorts of a graph
 
 dependency function of Graph (does a node come before another node in the topo sort)
