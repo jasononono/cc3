@@ -1,11 +1,11 @@
 from .graph import *
-from .successor import *
 from .algorithms import *
 from .traversal import *
 from .cycle import *
 from .topo import *
 from .labeling import *
 from .flags import *
+from .tree import *
 from .graphics import display
 
 

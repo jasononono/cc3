@@ -1,7 +1,7 @@
 from collections import deque
 from collections.abc import Sequence
-from .graph import Graph, ListGraph, MatrixGraph
-from .successor import SuccessorGraph
+from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
+from .flags import GraphError, VertexError
 
 
 # BFS
@@ -11,9 +11,9 @@ def bfs(graph: Graph | SuccessorGraph, anchor = 0) -> Sequence[int]:
     returns an array indicating all nodes' distance/depth from anchor. A value of -1 means that the node cannot be reached"""
 
     if graph.order == 0:
-        raise IndexError("cannot run bfs on empty graph")
+        raise GraphError("cannot run bfs on empty graph")
     if not 0 <= anchor < graph.order:
-        raise IndexError("vertex does not exist in graph")
+        raise VertexError("vertex does not exist in graph")
 
     if isinstance(graph, ListGraph):
         return _bfs_list(graph, anchor)
@@ -97,9 +97,9 @@ def dfs(graph: Graph | SuccessorGraph, anchor = 0) -> Sequence[bool]:
     returns an array indicating whether each node can be reached from the anchor."""
 
     if graph.order == 0:
-        raise IndexError("cannot run dfs on empty graph")
+        raise GraphError("cannot run dfs on empty graph")
     if not 0 <= anchor < graph.order:
-        raise IndexError("vertex does not exist in graph")
+        raise VertexError("vertex does not exist in graph")
 
     visited = [False] * graph.order
 

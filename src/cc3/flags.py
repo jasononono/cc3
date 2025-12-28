@@ -18,3 +18,12 @@ PHYSICS_REPULSION = "PHYSICS_REPULSION"
 PHYSICS_DAMPING = "PHYSICS_DAMPING"
 PHYSICS_SPRING_STIFFNESS = "PHYSICS_SPRING_STIFFNESS"
 PHYSICS_SPRING_LENGTH = "PHYSICS_SPRING_LENGTH"
+
+class GraphError(Exception):
+    """base level flag for graph related exceptions"""
+
+class VertexError(GraphError):
+    """flag for vertex access failures (e.g. vertex 5 not in graph of size 3)"""
+
+class EdgeError(GraphError):
+    """flag for edge access failures (e.g. trying to remove an edge that doesn't exist)"""

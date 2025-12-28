@@ -9,6 +9,8 @@ tree class with:
 
 shorthand for special graph objects (QF, DAGs, etc.)
 
+custom error flags VertexError, TreeError, etc.
+
 toposort_all should return a set of all unique topo-sorts of a graph
 
 dependency function of Graph (does a node come before another node in the topo sort)
@@ -16,6 +18,10 @@ dependency function of Graph (does a node come before another node in the topo s
 eulerian algorithms under euler header
 
 turn_into_directed / undirected functions
+
+get_components should only find weak islands
+    strong islands should be a separate function (eg. get_components_strong, split_strong)
+    maybe even get_components(strong = True)
 
 remove vertices & edges
 

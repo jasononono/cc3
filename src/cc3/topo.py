@@ -1,7 +1,7 @@
 from collections import deque
 from collections.abc import Sequence
-from .graph import Graph, ListGraph, MatrixGraph
-from .successor import SuccessorGraph
+from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
+from .flags import GraphError
 
 
 def topo_sort(graph: Graph, safe = False) -> Sequence[int]:
@@ -19,14 +19,14 @@ def topo_sort(graph: Graph, safe = False) -> Sequence[int]:
         raise NotImplementedError(f"topological sorting not supported for '{type(graph).__name__}'")
 
     if safe and len(result) != graph.order:
-        raise ValueError("graph cannot be topologically sorted (contains cycle)")
+        raise GraphError("graph cannot be topologically sorted (contains cycle)")
     return result
 
 def _topo_sort_list(graph: ListGraph) -> Sequence[int]:
     """helper function of topo_sort for ListGraphs"""
 
     if not graph.directed:
-        raise TypeError("topological sorting not supported for undirected graphs")
+        raise GraphError("topological sorting not supported for undirected graphs")
 
     in_degree = [0] * graph.order
     for n in graph.adj:
@@ -54,7 +54,7 @@ def _topo_sort_matrix(graph: MatrixGraph) -> Sequence[int]:
     """helper function of topo_sort for ListGraphs"""
 
     if not graph.directed:
-        raise TypeError("topological sorting not supported for undirected graphs")
+        raise GraphError("topological sorting not supported for undirected graphs")
 
     in_degree = [0] * graph.order
     for n in graph.adj:

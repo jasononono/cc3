@@ -1,5 +1,4 @@
-from .graph import Graph
-from .successor import SuccessorGraph
+from .graph import Graph, SuccessorGraph
 from typing import Any
 
 
