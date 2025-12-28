@@ -1,11 +1,12 @@
-from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
+from .graph import Graph
+from .successor import SuccessorGraph
 from typing import Any
 
 
 class LabelMap:
     """maps unique labels to indices of a graph"""
 
-    def __init__(self, graph: Graph) -> None:
+    def __init__(self, graph: Graph | SuccessorGraph) -> None:
         self.parent = graph
         self.map = []
         self.find = {}
@@ -28,7 +29,7 @@ class LabelMap:
             for i, l in enumerate(self.map):
                 self.find[l] = i
 
-    def set_parent(self, graph: Graph) -> None:
+    def set_parent(self, graph: Graph | SuccessorGraph) -> None:
         """updates the label map and bind to another graph"""
 
         self.parent = graph

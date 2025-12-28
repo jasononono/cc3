@@ -1,6 +1,7 @@
 from collections import deque
 from collections.abc import Sequence
-from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
+from .graph import Graph, ListGraph, MatrixGraph
+from .successor import SuccessorGraph
 
 
 # BFS

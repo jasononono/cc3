@@ -1,4 +1,5 @@
 from .graph import *
+from .successor import *
 from .algorithms import *
 from .traversal import *
 from .cycle import *

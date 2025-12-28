@@ -1,7 +1,8 @@
 import pyglet, numpy, random, math
 from typing import Tuple
 
-from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
+from .graph import Graph, ListGraph, MatrixGraph
+from .successor import SuccessorGraph
 from .flags import *
 
 

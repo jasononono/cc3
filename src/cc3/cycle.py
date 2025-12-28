@@ -1,4 +1,5 @@
-from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
+from .graph import Graph, ListGraph, MatrixGraph
+from .successor import SuccessorGraph
 
 
 # CYCLE DETECTION
@@ -104,32 +105,3 @@ def _has_cycle_successor_dfs(graph: SuccessorGraph, current: int, visited: list[
 
     visited[current] = 2
     return False
-
-# TORTOISE AND HARE
-def cycle_start(graph: SuccessorGraph, source = 0):
-    """returns the start of a cycle in a successor graph using Floyd's algorithm
-
-    if no cycle is detected beginning at the source, -1 will be returned"""
-
-    if graph.adj[source] is None or graph.adj[graph.adj[source].dest] is None:
-        return -1
-
-    tortoise = graph.adj[source].dest
-    hare = graph.adj[graph.adj[source].dest].dest
-
-    while tortoise != hare:
-        tortoise = graph.adj[tortoise].dest
-        hare = graph.adj[hare].dest
-        if hare is None:
-            return -1
-        hare = graph.adj[hare].dest
-        if hare is None:
-            return -1
-
-    tortoise = source
-
-    while tortoise != hare:
-        tortoise = graph.adj[tortoise].dest
-        hare = graph.adj[hare].dest
-
-    return hare

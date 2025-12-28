@@ -15,6 +15,8 @@ dependency function of Graph (does a node come before another node in the topo s
 
 eulerian algorithms under euler header
 
+turn_into_directed / undirected functions
+
 remove vertices & edges
 
 move is_functional into algorithms header and apply for all graphs (maybe split into is_successor?)
@@ -26,5 +28,7 @@ successor graph after_n_steps function (algorithm header?)
 DSU (including QF, optimizations)
 
 MST function that returns new graph
+
+multi windowing for graphs
 
 the traversal boilerplate thingy oh no (final boss)

@@ -1,5 +1,6 @@
 from collections.abc import Sequence
-from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
+from .graph import Graph, ListGraph, MatrixGraph
+from .successor import SuccessorGraph
 from .traversal import _dfs_list, _dfs_matrix, _dfs_successor
 
 
