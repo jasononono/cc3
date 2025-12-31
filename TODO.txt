@@ -1,5 +1,10 @@
 >>> rewrite graphics module
 
+DSU (including QF, optimizations)
+get_components should only find weak islands
+    strong islands should be a separate function (eg. get_components_strong, split_strong)
+    maybe even get_components(strong = True)
+
 >>> tree functions on graphs (is_tree, is_forest, etc.)
 
 tree class with:
@@ -17,10 +22,6 @@ eulerian algorithms under euler header
 
 turn_into_directed / undirected functions
 
-get_components should only find weak islands
-    strong islands should be a separate function (eg. get_components_strong, split_strong)
-    maybe even get_components(strong = True)
-
 remove vertices & edges
 
 move is_functional into algorithms header and apply for all graphs (maybe split into is_successor?)
@@ -29,7 +30,7 @@ behaviour with default operators (+, -, edge in graph, is, ==, etc.)
 
 successor graph after_n_steps function (algorithm header?)
 
-DSU (including QF, optimizations)
+classify between tree and arborescence in directed graphs
 
 MST function that returns new graph
 

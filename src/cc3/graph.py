@@ -24,6 +24,18 @@ class Graph:
     def get_labels(self) -> Sequence[str]:
         """returns the labels of all vertices"""
         raise NotImplementedError()
+    
+    def get_out_degrees(self) -> Sequence[int]:
+        """returns the number of outgoing edges of all vertices"""
+        raise NotImplementedError()
+    
+    def get_in_degrees(self) -> Sequence[int]:
+        """returns the number of incoming edges of all vertices"""
+        raise NotImplementedError()
+    
+    def get_degrees(self) -> Sequence[int]:
+        """returns the number of connections of all vertices"""
+        raise NotImplementedError()
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Sequence[Edge | int]:
@@ -43,7 +55,7 @@ class Graph:
         raise NotImplementedError()
 
     def degree(self, v: int) -> int:
-        """returns the degree of a vertex"""
+        """returns the number of connections of a vertex"""
         raise NotImplementedError()
 
     def get_label(self, v: int) -> str:
@@ -195,6 +207,27 @@ class ListGraph(Graph):
 
     def get_labels(self) -> Sequence[str]:
         return self.labels.copy()
+    
+    def get_out_degrees(self) -> Sequence[int]:
+        return [len(n) for n in self.adj]
+    
+    def get_in_degrees(self) -> Sequence[int]:
+        result = [0] * self.order
+        for n in self.adj:
+            for e in n:
+                result[e.dest] += 1
+        return result
+    
+    def get_degrees(self) -> Sequence[int]:
+        if not self.directed:
+            return self.get_out_degrees()
+        
+        result = [0] * self.order
+        for n in self.adj:
+            for e in n:
+                result[e.origin] += 1
+                result[e.dest] += 1
+        return result
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Sequence[Edge]:
@@ -453,6 +486,34 @@ class MatrixGraph(Graph):
 
     def get_labels(self) -> Sequence[str]:
         return self.labels.copy()
+    
+    def get_out_degrees(self) -> Sequence[int]:
+        result = [0] * self.order
+        for i, n in enumerate(self.adj):
+            for e in n:
+                if e != self.default_value:
+                    result[i] += 1
+        return result
+    
+    def get_in_degrees(self) -> Sequence[int]:
+        result = [0] * self.order
+        for n in self.adj:
+            for i, e in enumerate(n):
+                if e != self.default_value:
+                    result[i] += 1
+        return result
+    
+    def get_degrees(self) -> Sequence[int]:
+        if not self.directed:
+            return self.get_out_degrees()
+        
+        result = [0] * self.order
+        for i, n in enumerate(self.adj):
+            for j, e in enumerate(n):
+                if e != self.default_value:
+                    result[i] += 1
+                    result[j] += 1
+        return result
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Sequence[int]:
@@ -676,6 +737,30 @@ class SuccessorGraph:
         """returns the labels of all vertices"""
 
         return self.labels.copy()
+    
+    def get_out_degrees(self) -> Sequence[int]:
+        """returns the number of outgoing edges of all vertices"""
+        
+        return [0 if e is None else 1 for e in self.adj]
+    
+    def get_in_degrees(self) -> Sequence[int]:
+        """returns the number of incoming edges of all vertices"""
+
+        result = [0] * self.order
+        for e in self.adj:
+            if e is not None:
+                result[e.dest] += 1
+        return result
+    
+    def get_degrees(self) -> Sequence[int]:
+        """returns the number of connections of all vertices"""
+        
+        result = [0] * self.order
+        for e in self.adj:
+            if e is not None:
+                result[e.origin] += 1
+                result[e.dest] += 1
+        return result
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Edge:
