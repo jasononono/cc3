@@ -5,7 +5,7 @@ from .flags import GraphError, VertexError
 
 
 # BFS
-def bfs(graph: Graph | SuccessorGraph, anchor = 0) -> Sequence[int]:
+def bfs(graph: Graph, anchor = 0) -> Sequence[int]:
     """run the breadth-first search algorithm on a graph
 
     returns an array indicating all nodes' distance/depth from anchor. A value of -1 means that the node cannot be reached"""
@@ -91,7 +91,7 @@ def _bfs_successor(graph: SuccessorGraph, anchor = 0) -> Sequence[int]:
     return dist
 
 # DFS
-def dfs(graph: Graph | SuccessorGraph, anchor = 0) -> Sequence[bool]:
+def dfs(graph: Graph, anchor = 0) -> Sequence[bool]:
     """run the depth-first search algorithm on a graph
 
     returns an array indicating whether each node can be reached from the anchor."""

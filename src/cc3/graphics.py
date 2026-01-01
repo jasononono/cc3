@@ -94,7 +94,7 @@ def set_attribute(flag, value) -> None:
         raise TypeError(f"attribute '{flag}' does not exist")
 
 
-def get_edges(graph: Graph | SuccessorGraph) -> numpy.ndarray:
+def get_edges(graph: Graph) -> numpy.ndarray:
     """helper function that turns the edge data of a graph into a numpy array"""
 
     edges = []
@@ -129,7 +129,7 @@ def randomize_positions(amount):
                         for _ in range(amount)]
     return numpy.array(vertex_position, dtype = numpy.float32)
 
-def display(graph: Graph | SuccessorGraph) -> None:
+def display(graph: Graph) -> None:
     """create an interactive visualization of the provided graph"""
 
     config = pyglet.gl.Config(sample_buffers = 1, samples = 8, double_buffer = True)

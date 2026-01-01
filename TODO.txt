@@ -2,12 +2,11 @@
 
 DSU (including QF, optimizations)
 get_components should only find weak islands
-    strong islands should be a separate function (eg. get_components_strong, split_strong)
+    strong islands should be a separate function (e.g. get_components_strong, split_strong)
     maybe even get_components(strong = True)
 
->>> tree functions on graphs (is_tree, is_forest, etc.)
-
-tree class with:
+>>> tree class (undirected) with:
+    fit functions for this class (watch out for functions that rely on isinstance(Graph) to check if directed parameter exists)
     set_root, get_centers, get_diameter, get_radius, get_leaves
     is_ancestor, is_child, is_parent, is_descendant
     get_ancestors, get_children, get_parents, get_descendants

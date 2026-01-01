@@ -53,7 +53,7 @@ def _count_islands_successor(graph: SuccessorGraph) -> int:
     return count
 
 # SPLIT
-def split(graph: Graph) -> Sequence[Graph | SuccessorGraph]:
+def split(graph: Graph) -> Sequence[Graph]:
     """separate all islands of a graph and returns a list of these islands (as distinct graph objects of the same variant)"""
 
     if isinstance(graph, ListGraph):

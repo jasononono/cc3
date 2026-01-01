@@ -2,7 +2,7 @@ from .graph import Graph, ListGraph, MatrixGraph, SuccessorGraph
 
 
 # CYCLE DETECTION
-def has_cycle(graph: Graph | SuccessorGraph) -> bool:
+def has_cycle(graph: Graph) -> bool:
     """returns a boolean indicating whether there is a cycle in a graph"""
 
     if isinstance(graph, SuccessorGraph):

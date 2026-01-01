@@ -5,11 +5,11 @@ from .flags import VertexError, EdgeError
 
 
 class Graph:
-    """a base class for graphs (does nothing)
+    """a base class for graphs (do not use)
 
-    used to unify ListGraph and MatrixGraph"""
+    used to unify any graph variant that utilizes an adjacency list/matrix"""
 
-    def __init__(self: Graph) -> None:
+    def __init__(self) -> None:
         self.order = 0  # number of vertices (n)
         self.size = 0  # number of edges (e)
         self.weighted = False
@@ -23,44 +23,25 @@ class Graph:
 
     def get_labels(self) -> Sequence[str]:
         """returns the labels of all vertices"""
-        raise NotImplementedError()
-    
-    def get_out_degrees(self) -> Sequence[int]:
-        """returns the number of outgoing edges of all vertices"""
-        raise NotImplementedError()
-    
-    def get_in_degrees(self) -> Sequence[int]:
-        """returns the number of incoming edges of all vertices"""
-        raise NotImplementedError()
+
+        return self.labels.copy()
     
     def get_degrees(self) -> Sequence[int]:
         """returns the number of connections of all vertices"""
         raise NotImplementedError()
 
     # VERTEX ACCESS
-    def get_outgoing(self, v: int) -> Sequence[Edge | int]:
-        """returns all outgoing edges of a vertex"""
-        raise NotImplementedError()
-
-    def get_incoming(self, v: int) -> Sequence[Edge | int]:
-        """returns all incoming edges of a vertex"""
-        raise NotImplementedError()
-
-    def out_degree(self, v: int) -> int:
-        """returns the number of outgoing edges of a vertex"""
-        raise NotImplementedError()
-
-    def in_degree(self, v: int) -> int:
-        """returns the number of incoming edges of a vertex"""
-        raise NotImplementedError()
-
     def degree(self, v: int) -> int:
         """returns the number of connections of a vertex"""
         raise NotImplementedError()
 
     def get_label(self, v: int) -> str:
         """returns the label of a vertex"""
-        raise NotImplementedError()
+
+        if not 0 <= v < self.order:
+            raise VertexError(f"vertex ({v}) does not exist in graph")
+
+        return self.labels[v]
 
     # VERTEX CONTROL
     def add_vertex(self, amount = 1) -> None:
@@ -75,7 +56,11 @@ class Graph:
 
     def reset(self) -> None:
         """remove all edges and vertices in the graph"""
-        raise NotImplementedError()
+
+        self.order = 0
+        self.size = 0
+        self.adj = []
+        self.labels = []
 
     def add_vertex_by_label(self, label: str) -> None:
         """push a vertex with a designated label to the end of the graph (newest index)"""
@@ -87,7 +72,11 @@ class Graph:
 
     def set_label(self, v: int, label: str) -> None:
         """set the label of a vertex"""
-        raise NotImplementedError()
+
+        if not 0 <= v < self.order:
+            raise VertexError(f"vertex ({v}) does not exist in graph")
+
+        self.labels[v] = label
 
     # EDGE ACCESS
     def is_edge(self, a: int, b: int) -> bool:
@@ -113,10 +102,6 @@ class Graph:
 
     def remove_edge(self, a: int, b: int) -> None:
         """attempts to remove an edge between (a) and (b)"""
-        raise NotImplementedError()
-
-    def move_edge(self, a1: int, b1: int, a2: int, b2: int) -> None:
-        """attempts to move an edge between (a1) and (b1) to between (a2) and (b2)"""
         raise NotImplementedError()
 
     def set_weight(self, a: int, b: int, w: int = 1) -> None:
@@ -151,7 +136,7 @@ class Graph:
 class Edge:
     """an edge class used in the ListGraph to store both weighted and unweighted instances"""
 
-    def __init__(self, a: int, b: int, w: Any = 1, parent: Optional[ListGraph | SuccessorGraph] = None) -> None:
+    def __init__(self, a: int, b: int, w: Any = 1, parent: Optional[ListGraph | Tree | SuccessorGraph] = None) -> None:
         self.origin = a
         self.dest = b
         self.weight = w
@@ -204,14 +189,15 @@ class ListGraph(Graph):
 
     def get_data(self) -> Sequence[Sequence[Edge]]:
         return [[e.copy() for e in n] for n in self.adj]
-
-    def get_labels(self) -> Sequence[str]:
-        return self.labels.copy()
     
     def get_out_degrees(self) -> Sequence[int]:
+        """returns the number of outgoing edges of all vertices"""
+
         return [len(n) for n in self.adj]
     
     def get_in_degrees(self) -> Sequence[int]:
+        """returns the number of incoming edges of all vertices"""
+
         result = [0] * self.order
         for n in self.adj:
             for e in n:
@@ -231,12 +217,16 @@ class ListGraph(Graph):
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Sequence[Edge]:
+        """returns all outgoing edges of a vertex"""
+
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
 
         return [e.copy() for e in self.adj[v]]
 
     def get_incoming(self, v: int) -> Sequence[Edge]:
+        """returns all incoming edges of a vertex"""
+
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
 
@@ -248,12 +238,16 @@ class ListGraph(Graph):
         return result
 
     def out_degree(self, v: int) -> int:
+        """returns the number of outgoing edges of a vertex"""
+
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
 
         return len(self.adj[v])
 
     def in_degree(self, v: int) -> int:
+        """returns the number of incoming edges of a vertex"""
+
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
 
@@ -267,12 +261,6 @@ class ListGraph(Graph):
     def degree(self, v: int) -> int:
         return int(self.directed) * self.in_degree(v) + self.out_degree(v)
 
-    def get_label(self, v: int) -> str:
-        if not 0 <= v < self.order:
-            raise VertexError(f"vertex ({v}) does not exist in graph")
-
-        return self.labels[v]
-
     # VERTEX CONTROL
     def add_vertex(self, amount = 1) -> None:
         if amount < 0:
@@ -284,12 +272,6 @@ class ListGraph(Graph):
 
     # TODO remove_vertex
 
-    def reset(self) -> None:
-        self.order = 0
-        self.size = 0
-        self.adj = []
-        self.labels = []
-
     def add_vertex_by_label(self, label: str) -> None:
         self.order += 1
         self.adj.append([])
@@ -299,12 +281,6 @@ class ListGraph(Graph):
         self.order += len(labels)
         self.adj.extend([[] for _ in range(len(labels))])
         self.labels.extend(labels)
-
-    def set_label(self, v: int, label: str) -> None:
-        if not 0 <= v < self.order:
-            raise VertexError(f"vertex ({v}) does not exist in graph")
-
-        self.labels[v] = label
 
     # EDGE ACCESS
     def is_edge(self, a: int, b: int) -> bool:
@@ -432,6 +408,177 @@ class ListGraph(Graph):
         return graph
 
 
+class Tree(Graph):
+    """an optimized ListGraph variant for tree operations"""
+
+    def __init__(self, v = 0, weighted = False) -> None:
+        super().__init__()
+        if v < 0:
+            raise ValueError("amount of vertices must not be negative")
+
+        self.order = v
+        self.size = 0
+
+        self.weighted = weighted
+
+        self.adj = [[] for _ in range(v)]
+        self.labels = [""] * v
+
+    def __str__(self) -> str:
+        result = []
+        align = 0
+        for i, l in enumerate(self.labels):
+            result.append(str(i) + ("" if l == "" else f"({l})"))
+            align = max(align, len(result[-1]))
+
+        for i, n in enumerate(self.adj):
+            result[i] += ' ' * (align - len(result[i])) + " | "
+            for e in n:
+                result[i] += str(e) + ' '
+
+        return '\n'.join(result).strip()
+
+    def get_data(self) -> Sequence[Sequence[Edge]]:
+        return [[e.copy() for e in n] for n in self.adj]
+
+    def get_degrees(self) -> Sequence[int]:
+        result = [0] * self.order
+        for n in self.adj:
+            for e in n:
+                result[e.origin] += 1
+                result[e.dest] += 1
+        return result
+
+    # VERTEX ACCESS
+    def get_connections(self, v: int) -> Sequence[Edge]:
+        """returns all connections of a vertex"""
+
+        if not 0 <= v < self.order:
+            raise VertexError(f"vertex ({v}) does not exist in graph")
+
+        return [e.copy() for e in self.adj[v]]
+
+    def degree(self, v: int) -> int:
+        if not 0 <= v < self.order:
+            raise VertexError(f"vertex ({v}) does not exist in graph")
+
+        return len(self.adj[v])
+
+    # VERTEX CONTROL
+    def add_vertex(self, amount = 1) -> None:
+        if amount < 0:
+            raise ValueError("amount must not be negative")
+
+        self.order += amount
+        self.adj.extend([[] for _ in range(amount)])
+        self.labels.extend([""] * amount)
+
+    # TODO remove_vertex
+
+    def add_vertex_by_label(self, label: str) -> None:
+        self.order += 1
+        self.adj.append([])
+        self.labels.append(label)
+
+    def add_vertices_by_label(self, labels: Sequence[str]) -> None:
+        self.order += len(labels)
+        self.adj.extend([[] for _ in range(len(labels))])
+        self.labels.extend(labels)
+
+    # EDGE ACCESS
+    def is_edge(self, a: int, b: int) -> bool:
+        if not (0 <= a < self.order and 0 <= b < self.order):
+            return False
+
+        for e in self.adj[a]:
+            if e.dest == b:
+                return True
+        return False
+
+    def get_edge(self, a: int, b: int) -> Edge:
+        if not 0 <= a < self.order:
+            raise VertexError(f"vertex ({a}) does not exist in graph")
+        if not 0 <= b < self.order:
+            raise VertexError(f"vertex ({b}) does not exist in graph")
+
+        for e in self.adj[a]:
+            if e.dest == b:
+                return e.copy()
+        raise EdgeError(f"edge [{a}->{b}] not in graph")
+
+    def get_weight(self, a: int, b: int) -> Any:
+        return self.get_edge(a, b).weight
+
+    # EDGE CONTROL
+    def add_edge(self, a: int, b: int, w: Any = 1, auto_expand = True) -> None:
+        if self.is_edge(a, b):
+            self.set_weight(a, b, w)
+            self.set_weight(b, a, w)
+            return
+        if a < 0 or b < 0:
+            raise IndexError(f"vertices must not be negative")
+
+        if auto_expand:
+            if a >= self.order or b >= self.order:
+                self.add_vertex(max(a, b) - self.order + 1)
+        else:
+            if not 0 <= a < self.order:
+                raise VertexError(f"vertex ({a}) does not exist in graph")
+            if not 0 <= b < self.order:
+                raise VertexError(f"vertex ({b}) does not exist in graph")
+
+        self.adj[a].append(Edge(a, b, w, self))
+        self.adj[b].append(Edge(b, a, w, self))
+        self.size += 1
+
+    def remove_edge(self, a: int, b: int) -> None:
+        if not 0 <= a < self.order:
+            raise VertexError(f"vertex ({a}) does not exist in graph")
+        if not 0 <= b < self.order:
+            raise VertexError(f"vertex ({b}) does not exist in graph")
+
+        self._remove_edge(a, b)
+        self._remove_edge(b, a)
+        self.size -= 1
+
+    def _remove_edge(self, a: int, b: int) -> None:
+        """helper function for remove_edge"""
+
+        for i, e in enumerate(self.adj[a]):
+            if e.dest == b:
+                del self.adj[a][i]
+                return
+        raise EdgeError(f"edge [{a}->{b}] not in graph")
+
+    # TODO move_edge
+
+    def set_weight(self, a: int, b: int, w: Any = 1) -> None:
+        self.get_edge(a, b).weight = w
+
+    def clear(self) -> None:
+        self.size = 0
+        self.adj = [[] for _ in range(self.order)]
+
+    def copy(self) -> Tree:
+        graph = Tree(self.order, self.weighted)
+        graph.size = self.size
+        for n in self.adj:
+            for e in n:
+                edge = e.copy()
+                edge.parent = graph
+                graph.adj[edge.origin].append(edge)
+
+        graph.labels = self.get_labels()
+
+        return graph
+
+    def __copy__(self) -> Tree:
+        return self.copy()
+
+    def __deepcopy__(self, memo) -> Tree:
+        return self.copy()
+
+
 class MatrixGraph(Graph):
     """a graph object variant that stores edges with an adjacency matrix
 
@@ -483,11 +630,10 @@ class MatrixGraph(Graph):
 
     def get_data(self) -> Sequence[Sequence[int]]:
         return [n.copy() for n in self.adj]
-
-    def get_labels(self) -> Sequence[str]:
-        return self.labels.copy()
     
     def get_out_degrees(self) -> Sequence[int]:
+        """returns the number of outgoing edges of all vertices"""
+
         result = [0] * self.order
         for i, n in enumerate(self.adj):
             for e in n:
@@ -496,6 +642,8 @@ class MatrixGraph(Graph):
         return result
     
     def get_in_degrees(self) -> Sequence[int]:
+        """returns the number of incoming edges of all vertices"""
+
         result = [0] * self.order
         for n in self.adj:
             for i, e in enumerate(n):
@@ -517,18 +665,24 @@ class MatrixGraph(Graph):
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Sequence[int]:
+        """returns all outgoing edges of a vertex"""
+
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
 
         return [i for i, e in enumerate(self.adj[v]) if e != self.default_value]
 
     def get_incoming(self, v: int) -> Sequence[int]:
+        """returns all incoming edges of a vertex"""
+
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
 
         return [i for i, n in enumerate(self.adj) if n[v] != self.default_value]
 
     def out_degree(self, v: int) -> int:
+        """returns the number of outgoing edges of a vertex"""
+
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
 
@@ -539,6 +693,8 @@ class MatrixGraph(Graph):
         return count
 
     def in_degree(self, v: int) -> int:
+        """returns the number of incoming edges of a vertex"""
+
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
 
@@ -550,12 +706,6 @@ class MatrixGraph(Graph):
 
     def degree(self, v: int) -> int:
         return int(self.directed) * self.in_degree(v) + self.out_degree(v)
-
-    def get_label(self, v: int) -> str:
-        if not 0 <= v < self.order:
-            raise VertexError(f"vertex ({v}) does not exist in graph")
-
-        return self.labels[v]
 
     # VERTEX CONTROL
     def add_vertex(self, amount = 1) -> None:
@@ -570,12 +720,6 @@ class MatrixGraph(Graph):
 
     # TODO remove_vertex
 
-    def reset(self) -> None:
-        self.order = 0
-        self.size = 0
-        self.adj = []
-        self.labels = []
-
     def add_vertex_by_label(self, label: str) -> None:
         self.order += 1
         for n in self.adj:
@@ -589,12 +733,6 @@ class MatrixGraph(Graph):
             n.extend([self.default_value] * len(labels))
         self.adj.extend([[self.default_value] * self.order for _ in range(len(labels))])
         self.labels.extend(labels)
-
-    def set_label(self, v: int, label: str) -> None:
-        if not 0 <= v < self.order:
-            raise VertexError(f"vertex ({v}) does not exist in graph")
-
-        self.labels[v] = label
 
     # EDGE ACCESS
     def is_edge(self, a: int, b: int) -> bool:
@@ -654,7 +792,7 @@ class MatrixGraph(Graph):
             self.adj[b][a] = self.default_value
         self.size -= 1
 
-    # TODO move_edge
+    # TODO move_edge """attempts to move an edge between (a1) and (b1) to between (a2) and (b2)"""
 
     def set_weight(self, a: int, b: int, w: Any = 1) -> None:
         self.adj[a][b] = w
@@ -703,10 +841,9 @@ class MatrixGraph(Graph):
         return graph
 
 
-class SuccessorGraph:
-    """a graph variant that has at most one outgoing edge per vertex"""
-
+class SuccessorGraph(Graph):
     def __init__(self, v = 0, weighted = False) -> None:
+        super().__init__()
         if v < 0:
             raise ValueError("amount of vertices must not be negative")
 
@@ -714,6 +851,7 @@ class SuccessorGraph:
         self.size = 0
 
         self.weighted = weighted
+        self.directed = True
 
         self.adj: list[Edge | None] = [None] * v
         self.labels = [""] * v
@@ -729,18 +867,11 @@ class SuccessorGraph:
         return labels + '\n' + string
 
     def get_data(self) -> Sequence[Edge | None]:
-        """returns the graph's raw adjacency data"""
-
         return [e.copy() for e in self.adj]
-
-    def get_labels(self) -> Sequence[str]:
-        """returns the labels of all vertices"""
-
-        return self.labels.copy()
     
     def get_out_degrees(self) -> Sequence[int]:
         """returns the number of outgoing edges of all vertices"""
-        
+
         return [0 if e is None else 1 for e in self.adj]
     
     def get_in_degrees(self) -> Sequence[int]:
@@ -753,8 +884,6 @@ class SuccessorGraph:
         return result
     
     def get_degrees(self) -> Sequence[int]:
-        """returns the number of connections of all vertices"""
-        
         result = [0] * self.order
         for e in self.adj:
             if e is not None:
@@ -764,7 +893,7 @@ class SuccessorGraph:
 
     # VERTEX ACCESS
     def get_outgoing(self, v: int) -> Edge:
-        """returns the outgoing edge of a vertex"""
+        """returns all outgoing edges of a vertex"""
 
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
@@ -774,7 +903,7 @@ class SuccessorGraph:
         return self.adj[v].copy()
 
     def get_incoming(self, v: int) -> Sequence[Edge]:
-        """returns all outgoing edges of a vertex"""
+        """returns all incoming edges of a vertex"""
 
         if not 0 <= v < self.order:
             raise VertexError(f"vertex ({v}) does not exist in graph")
@@ -802,22 +931,10 @@ class SuccessorGraph:
         return count
 
     def degree(self, v: int) -> int:
-        """returns the degree of a vertex"""
-
         return self.in_degree(v) + self.out_degree(v)
-
-    def get_label(self, v: int) -> str:
-        """returns the label of a vertex"""
-
-        if not 0 <= v < self.order:
-            raise VertexError(f"vertex ({v}) does not exist in graph")
-
-        return self.labels[v]
 
     # VERTEX CONTROL
     def add_vertex(self, amount = 1) -> None:
-        """push vertices to the end of the graph (newest indices)"""
-
         if amount < 0:
             raise ValueError("amount must not be negative")
 
@@ -827,46 +944,24 @@ class SuccessorGraph:
 
     # TODO remove_vertex
 
-    def reset(self) -> None:
-        self.order = 0
-        self.size = 0
-        self.adj = []
-        self.labels = []
-
     def add_vertex_by_label(self, label: str) -> None:
-        """push a vertex with a designated label to the end of the graph (newest index)"""
-
         self.order += 1
         self.adj.append(None)
         self.labels.append(label)
 
     def add_vertices_by_label(self, labels: Sequence[str]) -> None:
-        """push vertices with designated labels to the end of the graph (newest indices)"""
-
         self.order += len(labels)
         self.adj.extend([None] * len(labels))
         self.labels.extend(labels)
 
-    def set_label(self, v: int, label: str) -> None:
-        """set the label of a vertex"""
-
-        if not 0 <= v < self.order:
-            raise VertexError(f"vertex ({v}) does not exist in graph")
-
-        self.labels[v] = label
-
     # EDGE ACCESS
     def is_edge(self, a: int, b: int) -> bool:
-        """returns a boolean indicating whether there is an edge between (a) and (b)"""
-
         if not (0 <= a < self.order and 0 <= b < self.order):
             return False
 
         return self.adj[a] is not None and self.adj[a].dest == b
 
     def get_edge(self, a: int, b: int) -> Edge:
-        """returns the object representing the edge between (a) and (b)"""
-
         if not 0 <= a < self.order:
             raise VertexError(f"vertex ({a}) does not exist in graph")
         if not 0 <= b < self.order:
@@ -880,20 +975,12 @@ class SuccessorGraph:
         return self.adj[a].copy()
 
     def get_weight(self, a: int, b: int = None) -> Any:
-        """returns the weight of an edge between (a) and (b)
-
-        the parameter (b) is optional for checking if the requested edge exists"""
-
         if b is None:
             return self.get_outgoing(a).weight
         return self.get_edge(a, b).weight
 
     # EDGE CONTROL
     def add_edge(self, a: int, b: int, w: Any = 1, auto_expand = True) -> None:
-        """insert an edge between (a) and (b).
-
-        if vertex does not exist and auto_expand is True, the graph will automatically add vertices."""
-
         if self.is_edge(a, b):
             self.set_weight(a, w = w)
             return
@@ -910,7 +997,7 @@ class SuccessorGraph:
                 raise VertexError(f"vertex ({b}) does not exist in graph")
 
         if self.out_degree(a):
-            self.move_edge(a, b)
+            self.redirect_edge(a, b)
             self.set_weight(a, w = w)
             return
 
@@ -918,8 +1005,6 @@ class SuccessorGraph:
         self.size += 1
 
     def remove_edge(self, a: int, b: int) -> None:
-        """attempts to remove the edge between (a) and (b)"""
-
         if not 0 <= a < self.order:
             raise VertexError(f"vertex ({a}) does not exist in graph")
         if not 0 <= b < self.order:
@@ -930,8 +1015,8 @@ class SuccessorGraph:
         self.adj[a] = None
         self.size -= 1
 
-    def move_edge(self, a: int, b: int) -> None:
-        """attempts to redirect the edge starting on (a) to end at (b)"""
+    def redirect_edge(self, a: int, b: int) -> None:
+        """attempts to redirect the edge starting at (a) to end at (b)"""
 
         if not 0 <= a < self.order:
             raise VertexError(f"vertex ({a}) does not exist in graph")
@@ -943,10 +1028,6 @@ class SuccessorGraph:
         self.adj[a].dest = b
 
     def set_weight(self, a: int, b: int = None, w: Any = 1) -> None:
-        """set the weight of the edge starting on (a)
-
-        the parameter (b) is optional for checking if the requested edge exists"""
-
         if not 0 <= a < self.order:
             raise VertexError(f"vertex ({a}) does not exist in graph")
         if self.adj[a] is None:
@@ -960,14 +1041,10 @@ class SuccessorGraph:
         self.adj[a].weight = w
 
     def clear(self) -> None:
-        """clears all edges in the graph"""
-
         self.size = 0
         self.adj = [None] * self.order
 
     def copy(self) -> SuccessorGraph:
-        """make an identical copy of the current graph"""
-
         graph = SuccessorGraph(self.order, self.weighted)
         graph.size = self.size
 
