@@ -148,6 +148,7 @@ def display(graph: Graph) -> None:
             self.vertex_movement = numpy.zeros((graph.order, 2), dtype = numpy.float32)
 
             self.selected_vertex = None
+            self.selected_position = None
 
         def vertex_repulsion(self):
             """force each vertex apart"""
@@ -190,10 +191,13 @@ def display(graph: Graph) -> None:
         def update(self) -> None:
             """update graph visuals"""
 
+            if data.selected_vertex is not None:
+                data.vertex_position[data.selected_vertex] = data.selected_position
+
             self.vertex_movement.fill(0)
             self.vertex_repulsion()
             self.edge_tension()
-            self.central_gravity()
+            # self.central_gravity()
 
             excluded_vel = None
             excluded_pos = None
@@ -279,6 +283,8 @@ def display(graph: Graph) -> None:
         if data.selected_vertex is not None:
             outline_objects[data.selected_vertex].color = _attributes.colour_outline_selected
 
+        data.selected_position = (x, y)
+
     @window.event
     def on_mouse_release(x, y, button, modifiers) -> None:
         if data.selected_vertex is not None:
@@ -288,7 +294,7 @@ def display(graph: Graph) -> None:
     @window.event
     def on_mouse_drag(x, y, dx, dy, buttons, modifiers) -> None:
         if data.selected_vertex is not None:
-            data.vertex_position[data.selected_vertex] = x, y
+            data.selected_position = (x, y)
 
     @window.event
     def on_draw() -> None:
